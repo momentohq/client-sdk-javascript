@@ -2,6 +2,8 @@ import {
   AllEndpoints,
   decodeAuthToken,
   fromEntries,
+  isBase64,
+  isGlobalApiKey,
   populateAllEndpointsFromBaseEndpoint,
 } from '../internal/utils';
 
@@ -460,6 +462,16 @@ export class GlobalKeyStringMomentoTokenProvider extends CredentialProviderBase 
     if (!key.length) {
       throw new Error('API key cannot be an empty string');
     }
+    if (isBase64(key)) {
+      throw new Error(
+        'Did not expect global API key to be base64 encoded. Are you using the correct key? Or did you mean to use `fromString()` instead?'
+      );
+    }
+    if (!isGlobalApiKey(key)) {
+      throw new Error(
+        'Provided API key is not a valid global API key. Are you using the correct key? Or did you mean to use `fromString()` instead?'
+      );
+    }
 
     let endpoint: string;
     if ('endpoint' in props) {
@@ -543,6 +555,16 @@ export class GlobalKeyEnvMomentoTokenProvider extends GlobalKeyStringMomentoToke
     if (!authToken) {
       throw new Error(
         `Empty value for environment variable ${props.environmentVariableName}`
+      );
+    }
+    if (isBase64(authToken)) {
+      throw new Error(
+        'Did not expect global API key to be base64 encoded. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` instead?'
+      );
+    }
+    if (!isGlobalApiKey(authToken)) {
+      throw new Error(
+        'Provided API key is not a valid global API key. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` instead?'
       );
     }
     if (!props.endpoint) {

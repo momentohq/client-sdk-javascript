@@ -23,7 +23,8 @@ const testControlEndpoint = 'control-plane-endpoint.not.a.domain';
 const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 
 const testGlobalApiKeyEnvVar = 'MOMENTO_TEST_GLOBAL_API_KEY';
-const testGlobalApiKey = 'testToken';
+const testGlobalApiKey =
+  'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyJ9.LloWc3qLRkBm_djlOjXE8wNSENqOay17xHLJR5XIr0cwkyhhh8w_oBaiQDktBkOvh-wKLQGUKavSQuOwXEb2_g';
 const testEndpoint = 'testEndpoint';
 
 describe('StringMomentoTokenProvider', () => {
@@ -139,6 +140,14 @@ describe('StringMomentoTokenProvider', () => {
         apiKey: fakeSessionToken,
       })
     ).toThrowError('unable to determine control endpoint');
+  });
+
+  it('throws an error when provided with a global api key', () => {
+    expect(() =>
+      CredentialProvider.fromString({
+        apiKey: testGlobalApiKey,
+      })
+    ).toThrowError();
   });
 });
 
@@ -314,6 +323,24 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
         endpoint: '',
       })
     ).toThrowError('Endpoint cannot be an empty string');
+  });
+
+  it('throws an error when provided with a v1 api key', () => {
+    expect(() =>
+      CredentialProvider.globalKeyFromString({
+        apiKey: fakeTestV1ApiKey,
+        endpoint: testEndpoint,
+      })
+    ).toThrowError();
+  });
+
+  it('throws an error when provided with a pre-v1 api key', () => {
+    expect(() =>
+      CredentialProvider.globalKeyFromString({
+        apiKey: fakeTestLegacyToken,
+        endpoint: testEndpoint,
+      })
+    ).toThrowError();
   });
 });
 
