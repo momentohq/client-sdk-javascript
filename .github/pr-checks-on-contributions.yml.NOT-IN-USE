@@ -1,0 +1,53 @@
+name: Build and Test on PR Contributions
+# Saving this workflow for future reference if we want to re-enable permission checks on PRs from forks.
+# Otherwise, just use build.yml for PRs from Momento developers.
+
+on:
+  pull_request_target:
+    branches: [main]
+
+jobs:
+  verify-user-permissions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get User Permission
+        id: checkAccess
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+      - name: Check User Permission
+        if: steps.checkAccess.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+
+  cache-tests:
+    needs: verify-user-permissions
+    strategy:
+      matrix:
+        node: [18]
+    name: Test Cache on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    env:
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
+      TEST_MGA_ACCOUNT_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_ACCOUNT_SESSION_TOKEN }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build and test all packages
+        run: |
+          node -v
+          ./scripts/build-and-test-all-packages-consistent-reads.sh

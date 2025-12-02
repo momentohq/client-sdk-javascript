@@ -1,7 +1,7 @@
 name: Build
 
 on:
-  pull_request_target:
+  pull_request:
     branches: [main]
 
 concurrency:
@@ -9,23 +9,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-user-permissions:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get User Permission
-        id: checkAccess
-        uses: actions-cool/check-user-permission@v2
-        with:
-          require: write
-          username: ${{ github.triggering_actor }}
-      - name: Check User Permission
-        if: steps.checkAccess.outputs.require-result == 'false'
-        run: |
-          echo "${{ github.triggering_actor }} does not have permissions on this repo."
-          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
-          echo "Job originally triggered by ${{ github.actor }}"
-          exit 1
-
   verify:
     runs-on: ubuntu-24.04
     steps:
@@ -369,7 +352,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cache-tests:
-    needs: verify-user-permissions
     strategy:
       matrix:
         node: [18]
@@ -397,10 +379,9 @@ jobs:
           ./scripts/build-and-test-all-packages-consistent-reads.sh
 
   test-examples:
-    needs: verify-user-permissions
     strategy:
       matrix:
-        node: [16, 18, 20]
+        node: [18, 20]
       fail-fast: true
     name: Test examples on node ${{ matrix.node }}
     runs-on: ubuntu-24.04
@@ -496,10 +477,9 @@ jobs:
         run: exit 1
 
   test-web-examples:
-    needs: verify-user-permissions
     strategy:
       matrix:
-        node: [ 16, 18 ]
+        node: [ 18 ]
       fail-fast: true
     name: Test web examples on node ${{ matrix.node }}
     runs-on: ubuntu-24.04
@@ -549,10 +529,9 @@ jobs:
         run: exit 1
 
   test-deno-examples:
-    needs: verify-user-permissions
     strategy:
       matrix:
-        node: [ 16, 18 ]
+        node: [ 18 ]
       fail-fast: true
     name: Test Deno examples on node ${{ matrix.node }}
     runs-on: ubuntu-24.04
