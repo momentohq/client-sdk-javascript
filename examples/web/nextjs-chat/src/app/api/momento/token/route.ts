@@ -9,7 +9,7 @@ import {
   authenticationMethod,
   AuthenticationMethod,
 } from "./config";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "../../auth/[...nextauth]/auth-options";
 import { getServerSession } from "next-auth";
 import { type NextRequest } from "next/server";
 
