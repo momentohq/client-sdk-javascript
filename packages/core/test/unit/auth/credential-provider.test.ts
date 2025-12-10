@@ -22,13 +22,15 @@ const fakeSessionToken =
 const testControlEndpoint = 'control-plane-endpoint.not.a.domain';
 const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 
-const testGlobalApiKeyEnvVar = 'MOMENTO_TEST_GLOBAL_API_KEY';
-const testGlobalApiKey =
-  'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyJ9.LloWc3qLRkBm_djlOjXE8wNSENqOay17xHLJR5XIr0cwkyhhh8w_oBaiQDktBkOvh-wKLQGUKavSQuOwXEb2_g';
+const apiKeyEnvVar = 'MOMENTO_TEST_V2_API_KEY';
+const testV2ApiKey =
+  'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImlkIjoic29tZS1pZCJ9.WRhKpdh7cFCXO7lAaVojtQAxK6mxMdBrvXTJL1xu94S0d6V1YSstOObRlAIMA7i_yIxO1mWEF3rlF5UNc77VXQ';
 const testEndpoint = 'testEndpoint';
+const endpointEnvVar = 'MOMENTO_TEST_ENDPOINT';
 
 describe('StringMomentoTokenProvider', () => {
   it('parses a valid legacy token', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const authProvider = CredentialProvider.fromString({
       apiKey: fakeTestLegacyToken,
     });
@@ -38,6 +40,7 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('parses a valid v1 auth token', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const authProvider = CredentialProvider.fromString({
       apiKey: base64EncodedFakeV1AuthToken,
     });
@@ -51,6 +54,7 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('supports the old "authToken" option', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const authProvider = CredentialProvider.fromString({
       authToken: base64EncodedFakeV1AuthToken,
     });
@@ -64,6 +68,7 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('supports overriding endpoints by specifying a base endpoint', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const legacyAuthProvider = CredentialProvider.fromString({
       apiKey: fakeTestLegacyToken,
       endpointOverrides: {
@@ -76,6 +81,7 @@ describe('StringMomentoTokenProvider', () => {
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.base.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const v1AuthProvider = CredentialProvider.fromString({
       apiKey: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
@@ -90,6 +96,7 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('supports overriding all endpoints explicitly', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const legacyAuthProvider = CredentialProvider.fromString({
       apiKey: fakeTestLegacyToken,
       endpointOverrides: {
@@ -103,6 +110,7 @@ describe('StringMomentoTokenProvider', () => {
     expect(legacyAuthProvider.getTokenEndpoint()).toEqual('token.foo');
     expect(legacyAuthProvider.areEndpointsOverridden()).toEqual(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const v1AuthProvider = CredentialProvider.fromString({
       apiKey: base64EncodedFakeV1AuthToken,
       endpointOverrides: {
@@ -119,6 +127,7 @@ describe('StringMomentoTokenProvider', () => {
   });
 
   it('parses a session token with endpoint overrides', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const sessionTokenProvider = CredentialProvider.fromString({
       apiKey: fakeSessionToken,
       endpointOverrides: {
@@ -136,16 +145,18 @@ describe('StringMomentoTokenProvider', () => {
 
   it('fails to parse a session token with no endpoint overrides', () => {
     expect(() =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       CredentialProvider.fromString({
         apiKey: fakeSessionToken,
       })
     ).toThrowError('unable to determine control endpoint');
   });
 
-  it('throws an error when provided with a global api key', () => {
+  it('throws an error when provided with a v2 api key', () => {
     expect(() =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       CredentialProvider.fromString({
-        apiKey: testGlobalApiKey,
+        apiKey: testV2ApiKey,
       })
     ).toThrowError();
   });
@@ -276,15 +287,24 @@ describe('EnvMomentoTokenProvider', () => {
     expect(v1AuthProvider.getTokenEndpoint()).toEqual('prefix.token.foo');
     expect(v1AuthProvider.areEndpointsOverridden()).toEqual(true);
   });
+
+  it('throws an error when provided with a v2 api key', () => {
+    process.env[apiKeyEnvVar] = testV2ApiKey;
+    expect(() =>
+      CredentialProvider.fromEnvironmentVariable({
+        environmentVariableName: apiKeyEnvVar,
+      })
+    ).toThrowError();
+  });
 });
 
-describe('GlobalKeyStringMomentoTokenProvider', () => {
+describe('ApiKeyV2TokenProvider', () => {
   it('parses an apiKey with endpoint and constructs proper endpoints', () => {
-    const authProvider = CredentialProvider.globalKeyFromString({
-      apiKey: testGlobalApiKey,
+    const authProvider = CredentialProvider.fromApiKeyV2({
+      apiKey: testV2ApiKey,
       endpoint: testEndpoint,
     });
-    expect(authProvider.getAuthToken()).toEqual(testGlobalApiKey);
+    expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
     expect(authProvider.getControlEndpoint()).toEqual(
       `control.${testEndpoint}`
     );
@@ -295,11 +315,11 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
   });
 
   it('supports the authToken option', () => {
-    const authProvider = CredentialProvider.globalKeyFromString({
-      authToken: testGlobalApiKey,
+    const authProvider = CredentialProvider.fromApiKeyV2({
+      authToken: testV2ApiKey,
       endpoint: testEndpoint,
     });
-    expect(authProvider.getAuthToken()).toEqual(testGlobalApiKey);
+    expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
     expect(authProvider.getControlEndpoint()).toEqual(
       `control.${testEndpoint}`
     );
@@ -309,7 +329,7 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
 
   it('throws an error when apiKey/authToken is missing', () => {
     expect(() =>
-      CredentialProvider.globalKeyFromString({
+      CredentialProvider.fromApiKeyV2({
         endpoint: testEndpoint,
         apiKey: '',
       })
@@ -318,8 +338,8 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
 
   it('throws an error when endpoint is missing', () => {
     expect(() =>
-      CredentialProvider.globalKeyFromString({
-        apiKey: testGlobalApiKey,
+      CredentialProvider.fromApiKeyV2({
+        apiKey: testV2ApiKey,
         endpoint: '',
       })
     ).toThrowError('Endpoint cannot be an empty string');
@@ -327,7 +347,7 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
 
   it('throws an error when provided with a v1 api key', () => {
     expect(() =>
-      CredentialProvider.globalKeyFromString({
+      CredentialProvider.fromApiKeyV2({
         apiKey: fakeTestV1ApiKey,
         endpoint: testEndpoint,
       })
@@ -336,7 +356,7 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
 
   it('throws an error when provided with a pre-v1 api key', () => {
     expect(() =>
-      CredentialProvider.globalKeyFromString({
+      CredentialProvider.fromApiKeyV2({
         apiKey: fakeTestLegacyToken,
         endpoint: testEndpoint,
       })
@@ -344,19 +364,21 @@ describe('GlobalKeyStringMomentoTokenProvider', () => {
   });
 });
 
-describe('GlobalKeyEnvMomentoTokenProvider', () => {
+describe('EnvVarV2TokenProvider', () => {
   afterEach(() => {
-    delete process.env[testGlobalApiKeyEnvVar];
+    delete process.env[apiKeyEnvVar];
+    delete process.env[endpointEnvVar];
     jest.resetModules();
   });
 
   it('parses an apiKey from environment variable with endpoint', () => {
-    process.env[testGlobalApiKeyEnvVar] = testGlobalApiKey;
-    const authProvider = CredentialProvider.globalKeyFromEnvVar({
-      environmentVariableName: testGlobalApiKeyEnvVar,
-      endpoint: testEndpoint,
+    process.env[apiKeyEnvVar] = testV2ApiKey;
+    process.env[endpointEnvVar] = testEndpoint;
+    const authProvider = CredentialProvider.fromEnvVarV2({
+      apiKeyEnvVar,
+      endpointEnvVar,
     });
-    expect(authProvider.getAuthToken()).toEqual(testGlobalApiKey);
+    expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
     expect(authProvider.getControlEndpoint()).toEqual(
       `control.${testEndpoint}`
     );
@@ -366,45 +388,119 @@ describe('GlobalKeyEnvMomentoTokenProvider', () => {
     expect(authProvider.isEndpointSecure()).toEqual(true);
   });
 
-  it('throws an error when environment variable is not set', () => {
+  it('throws an error when api key env var is not set', () => {
+    process.env[endpointEnvVar] = testEndpoint;
     expect(() =>
-      CredentialProvider.globalKeyFromEnvVar({
-        environmentVariableName: testGlobalApiKeyEnvVar,
-        endpoint: testEndpoint,
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar,
       })
-    ).toThrowError(
-      `Empty value for environment variable ${testGlobalApiKeyEnvVar}`
-    );
+    ).toThrowError(`Empty value for environment variable ${apiKeyEnvVar}`);
   });
 
-  it('throws an error when environment variable is empty', () => {
-    process.env[testGlobalApiKeyEnvVar] = '';
+  it('throws an error when endpoint env var is not set', () => {
+    process.env[apiKeyEnvVar] = testV2ApiKey;
     expect(() =>
-      CredentialProvider.globalKeyFromEnvVar({
-        environmentVariableName: testGlobalApiKeyEnvVar,
-        endpoint: testEndpoint,
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar,
       })
-    ).toThrowError(
-      `Empty value for environment variable ${testGlobalApiKeyEnvVar}`
-    );
+    ).toThrowError(`Empty value for environment variable ${endpointEnvVar}`);
+  });
+
+  it('throws an error when api key env var is empty', () => {
+    process.env[apiKeyEnvVar] = '';
+    process.env[endpointEnvVar] = testEndpoint;
+    expect(() =>
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar,
+      })
+    ).toThrowError(`Empty value for environment variable ${apiKeyEnvVar}`);
   });
 
   it('throws an error when endpoint is missing', () => {
-    process.env[testGlobalApiKeyEnvVar] = testGlobalApiKey;
+    process.env[apiKeyEnvVar] = testV2ApiKey;
+    process.env[endpointEnvVar] = '';
     expect(() =>
-      CredentialProvider.globalKeyFromEnvVar({
-        environmentVariableName: testGlobalApiKeyEnvVar,
-        endpoint: '',
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar,
       })
-    ).toThrowError('Missing required property: endpoint');
+    ).toThrowError(`Empty value for environment variable ${endpointEnvVar}`);
   });
 
-  it('throws an error when environmentVariableName is missing', () => {
+  it('throws an error when api key env var name is missing', () => {
+    process.env[endpointEnvVar] = testEndpoint;
     expect(() =>
-      CredentialProvider.globalKeyFromEnvVar({
-        environmentVariableName: '',
-        endpoint: testEndpoint,
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar: '',
+        endpointEnvVar,
       })
     ).toThrowError();
+  });
+
+  it('throws an error when endpoint env var name is missing', () => {
+    process.env[apiKeyEnvVar] = testV2ApiKey;
+    expect(() =>
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar: '',
+      })
+    ).toThrowError();
+  });
+
+  it('throws an error when provided with a v1 api key', () => {
+    process.env[apiKeyEnvVar] = fakeTestV1ApiKey;
+    process.env[endpointEnvVar] = testEndpoint;
+    expect(() =>
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar,
+      })
+    ).toThrowError();
+  });
+
+  it('throws an error when provided with a pre-v1 api key', () => {
+    process.env[apiKeyEnvVar] = fakeTestLegacyToken;
+    process.env[endpointEnvVar] = testEndpoint;
+    expect(() =>
+      CredentialProvider.fromEnvVarV2({
+        apiKeyEnvVar,
+        endpointEnvVar,
+      })
+    ).toThrowError();
+  });
+});
+
+describe('fromDisposableToken', () => {
+  it('throws an error when provided with a v2 api key', () => {
+    expect(() =>
+      CredentialProvider.fromDisposableToken({
+        apiKey: testV2ApiKey,
+      })
+    ).toThrowError();
+  });
+
+  it('parses a valid legacy token', () => {
+    const authProvider = CredentialProvider.fromDisposableToken({
+      apiKey: fakeTestLegacyToken,
+    });
+    expect(authProvider.getAuthToken()).toEqual(fakeTestLegacyToken);
+    expect(authProvider.getControlEndpoint()).toEqual(testControlEndpoint);
+    expect(authProvider.getCacheEndpoint()).toEqual(testCacheEndpoint);
+  });
+
+  it('parses a valid v1 auth token', () => {
+    const authProvider = CredentialProvider.fromDisposableToken({
+      apiKey: base64EncodedFakeV1AuthToken,
+    });
+    expect(authProvider.getAuthToken()).toEqual(fakeTestV1ApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${decodedV1Token.endpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(
+      `cache.${decodedV1Token.endpoint}`
+    );
   });
 });

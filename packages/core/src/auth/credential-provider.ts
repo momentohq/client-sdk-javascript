@@ -2,8 +2,7 @@ import {
   AllEndpoints,
   decodeAuthToken,
   fromEntries,
-  isBase64,
-  isGlobalApiKey,
+  isV2ApiKey,
   populateAllEndpointsFromBaseEndpoint,
 } from '../internal/utils';
 
@@ -98,34 +97,45 @@ export abstract class CredentialProvider {
    */
   abstract isEndpointSecure(): boolean;
 
+  /**
+   * @deprecated use fromEnvVarV2() instead
+   */
   static fromEnvironmentVariable(
     props: EnvMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new EnvMomentoTokenProvider(props);
   }
 
+  /**
+   * @deprecated use fromEnvVarV2() instead
+   */
   static fromEnvVar(
     props: EnvMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new EnvMomentoTokenProvider(props);
   }
 
+  /**
+   * @deprecated use fromApiKeyV2() or fromDisposableToken() instead
+   */
   static fromString(
     props: StringMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new StringMomentoTokenProvider(props);
   }
 
-  static globalKeyFromEnvVar(
-    props: GlobalKeyEnvMomentoTokenProviderProps
+  static fromDisposableToken(
+    props: StringMomentoTokenProviderProps | string
   ): CredentialProvider {
-    return new GlobalKeyEnvMomentoTokenProvider(props);
+    return new StringMomentoTokenProvider(props);
   }
 
-  static globalKeyFromString(
-    props: GlobalKeyStringMomentoTokenProviderProps
-  ): CredentialProvider {
-    return new GlobalKeyStringMomentoTokenProvider(props);
+  static fromEnvVarV2(props: EnvVarV2TokenProviderProps): CredentialProvider {
+    return new EnvVarV2TokenProvider(props);
+  }
+
+  static fromApiKeyV2(props: ApiKeyV2TokenProviderProps): CredentialProvider {
+    return new ApiKeyV2TokenProvider(props);
   }
 
   /**
@@ -188,20 +198,20 @@ export type StringMomentoTokenProviderProps =
   | StringMomentoApiKeyProviderProps
   | StringMomentoAuthTokenProviderProps;
 
-export type GlobalKeyStringMomentoTokenProviderProps =
-  StringMomentoTokenProviderProps & {
-    endpoint: string;
-  };
-
-export interface GlobalKeyEnvMomentoTokenProviderProps
-  extends EnvMomentoTokenProviderProps {
+export type ApiKeyV2TokenProviderProps = StringMomentoTokenProviderProps & {
   endpoint: string;
+};
+
+export interface EnvVarV2TokenProviderProps {
+  apiKeyEnvVar: string;
+  endpointEnvVar: string;
 }
 
 /**
  * Reads and parses a momento auth token stored in a String
  * @export
  * @class StringMomentoTokenProvider
+ * @deprecated use ApiKeyV2TokenProvider instead
  */
 export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly apiKey: string;
@@ -323,6 +333,7 @@ export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
  * Reads and parses a momento auth token stored as an environment variable.
  * @export
  * @class EnvMomentoTokenProvider
+ * @deprecated use EnvVarV2TokenProvider instead
  */
 export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
   environmentVariableName: string;
@@ -348,6 +359,7 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
 }
 
 export function getDefaultCredentialProvider(): CredentialProvider {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   return CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
 }
 
@@ -442,14 +454,14 @@ export class MomentoLocalProvider implements CredentialProvider {
   }
 }
 
-export class GlobalKeyStringMomentoTokenProvider extends CredentialProviderBase {
+export class ApiKeyV2TokenProvider extends CredentialProviderBase {
   private readonly apiKey: string;
   private readonly allEndpoints: AllEndpoints;
 
   /**
-   * @param {GlobalKeyStringMomentoTokenProviderProps} props configuration options for the token provider
+   * @param {ApiKeyV2TokenProviderProps} props configuration options for the token provider
    */
-  constructor(props: GlobalKeyStringMomentoTokenProviderProps) {
+  constructor(props: ApiKeyV2TokenProviderProps) {
     super();
     let key: string;
     if ('authToken' in props) {
@@ -462,14 +474,9 @@ export class GlobalKeyStringMomentoTokenProvider extends CredentialProviderBase 
     if (!key.length) {
       throw new Error('API key cannot be an empty string');
     }
-    if (isBase64(key)) {
+    if (!isV2ApiKey(key)) {
       throw new Error(
-        'Did not expect global API key to be base64 encoded. Are you using the correct key? Or did you mean to use `fromString()` instead?'
-      );
-    }
-    if (!isGlobalApiKey(key)) {
-      throw new Error(
-        'Provided API key is not a valid global API key. Are you using the correct key? Or did you mean to use `fromString()` instead?'
+        'Received an invalid v2 API key. Are you using the correct key? Or did you mean to use `fromString()` with a legacy key instead?'
       );
     }
 
@@ -538,45 +545,60 @@ export class GlobalKeyStringMomentoTokenProvider extends CredentialProviderBase 
   }
 }
 
-export class GlobalKeyEnvMomentoTokenProvider extends GlobalKeyStringMomentoTokenProvider {
-  environmentVariableName: string;
-
+export class EnvVarV2TokenProvider extends ApiKeyV2TokenProvider {
   /**
-   * @param {GlobalKeyEnvMomentoTokenProviderProps} props configuration options for the token provider
+   * @param {EnvVarV2TokenProviderProps} props configuration options for the token provider
    */
-  constructor(props: GlobalKeyEnvMomentoTokenProviderProps) {
-    if (!props.environmentVariableName) {
-      throw new Error('Missing required property: environmentVariableName');
+  constructor(props: EnvVarV2TokenProviderProps) {
+    if (!props.apiKeyEnvVar) {
+      throw new Error('Missing required property: apiKeyEnvVar');
     }
-    if (!props.environmentVariableName.length) {
-      throw new Error('Environment variable name cannot be an empty string');
+    if (!props.endpointEnvVar) {
+      throw new Error('Missing required property: endpointEnvVar');
     }
-    const authToken = process.env[props.environmentVariableName];
+    if (!props.apiKeyEnvVar.length) {
+      throw new Error(
+        'API key environment variable name cannot be an empty string'
+      );
+    }
+    if (!props.endpointEnvVar.length) {
+      throw new Error(
+        'Endpoint environment variable name cannot be an empty string'
+      );
+    }
+
+    const endpoint = process.env[props.endpointEnvVar];
+    if (!endpoint) {
+      throw new Error(
+        `Empty value for environment variable ${props.endpointEnvVar}`
+      );
+    }
+    if (!endpoint.length) {
+      throw new Error(
+        `Endpoint environment variable ${props.endpointEnvVar} cannot be an empty string`
+      );
+    }
+
+    const authToken = process.env[props.apiKeyEnvVar];
     if (!authToken) {
       throw new Error(
-        `Empty value for environment variable ${props.environmentVariableName}`
+        `Empty value for environment variable ${props.apiKeyEnvVar}`
       );
     }
-    if (isBase64(authToken)) {
+    if (!authToken.length) {
       throw new Error(
-        'Did not expect global API key to be base64 encoded. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` instead?'
+        `API key environment variable ${props.apiKeyEnvVar} cannot be an empty string`
       );
     }
-    if (!isGlobalApiKey(authToken)) {
+
+    if (!isV2ApiKey(authToken)) {
       throw new Error(
-        'Provided API key is not a valid global API key. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` instead?'
+        'Received an invalid v2 API key. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` with a legacy key instead?'
       );
-    }
-    if (!props.endpoint) {
-      throw new Error('Missing required property: endpoint');
-    }
-    if (!props.endpoint.length) {
-      throw new Error('Endpoint cannot be an empty string');
     }
     super({
       authToken: authToken,
-      endpoint: props.endpoint,
+      endpoint: endpoint,
     });
-    this.environmentVariableName = props.environmentVariableName;
   }
 }

@@ -1,9 +1,9 @@
-import {InvalidArgumentError} from '../../errors';
+import { InvalidArgumentError } from '../../errors';
 import jwtDecode from 'jwt-decode';
-import {isBase64} from './validators';
-import {decodeFromBase64} from './string';
-import {PredefinedScope} from '../../auth/tokens/permission-scope';
-import {BaseEndpointOverride} from '../../auth';
+import { isBase64 } from './validators';
+import { decodeFromBase64 } from './string';
+import { PredefinedScope } from '../../auth/tokens/permission-scope';
+import { BaseEndpointOverride } from '../../auth';
 
 export interface LegacyClaims {
   /**
@@ -16,9 +16,13 @@ export interface LegacyClaims {
   c: string;
 }
 
-export interface GlobalApiKeyClaims {
+export interface V2Claims {
   /** type of token, 'g' for global api key */
   t: string;
+  /** key ID */
+  id: string;
+  /** optional expiration time as unix timestamp in seconds */
+  exp?: number;
 }
 
 export interface Base64DecodedV1Token {
@@ -30,9 +34,11 @@ function decodeAuthTokenClaims<T>(authToken: string): T {
   return jwtDecode<T>(authToken);
 }
 
-export function isGlobalApiKey(authToken: string): boolean {
-  const decodedLegacyToken =
-    decodeAuthTokenClaims<GlobalApiKeyClaims>(authToken);
+export function isV2ApiKey(authToken: string): boolean {
+  if (isBase64(authToken)) {
+    return false;
+  }
+  const decodedLegacyToken = decodeAuthTokenClaims<V2Claims>(authToken);
   return decodedLegacyToken.t === 'g';
 }
 
@@ -99,9 +105,9 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         authToken: base64DecodedToken.api_key,
       };
     } else {
-      if (isGlobalApiKey(token)) {
+      if (isV2ApiKey(token)) {
         throw new InvalidArgumentError(
-          'Received a global API key. Are you using the correct key? Or did you mean to use `globalKeyFromString()` or `globalKeyFromEnvVar()` instead?'
+          'Received a v2 API key. Are you using the correct key? Or did you mean to use `fromApiKeyV2()` or `fromEnvVarV2()` instead?'
         );
       }
 
@@ -122,4 +128,4 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
   }
 };
 
-export class InternalSuperUserPermissions extends PredefinedScope {}
+export class InternalSuperUserPermissions extends PredefinedScope { }
