@@ -1,9 +1,9 @@
-import { InvalidArgumentError } from '../../errors';
+import {InvalidArgumentError} from '../../errors';
 import jwtDecode from 'jwt-decode';
-import { isBase64 } from './validators';
-import { decodeFromBase64 } from './string';
-import { PredefinedScope } from '../../auth/tokens/permission-scope';
-import { BaseEndpointOverride } from '../../auth';
+import {isBase64} from './validators';
+import {decodeFromBase64} from './string';
+import {PredefinedScope} from '../../auth/tokens/permission-scope';
+import {BaseEndpointOverride} from '../../auth';
 
 export interface LegacyClaims {
   /**
@@ -128,4 +128,4 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
   }
 };
 
-export class InternalSuperUserPermissions extends PredefinedScope { }
+export class InternalSuperUserPermissions extends PredefinedScope {}
