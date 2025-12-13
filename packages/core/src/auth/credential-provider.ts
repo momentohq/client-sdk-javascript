@@ -130,8 +130,10 @@ export abstract class CredentialProvider {
     return new StringMomentoTokenProvider(props);
   }
 
-  static fromEnvVarV2(props: EnvVarV2TokenProviderProps): CredentialProvider {
-    return new EnvVarV2TokenProvider(props);
+  static fromEnvVarV2(
+    props?: EnvMomentoV2TokenProviderProps
+  ): CredentialProvider {
+    return new EnvMomentoV2TokenProvider(props);
   }
 
   static fromApiKeyV2(props: ApiKeyV2TokenProviderProps): CredentialProvider {
@@ -202,9 +204,9 @@ export type ApiKeyV2TokenProviderProps = StringMomentoTokenProviderProps & {
   endpoint: string;
 };
 
-export interface EnvVarV2TokenProviderProps {
-  apiKeyEnvVar: string;
-  endpointEnvVar: string;
+export interface EnvMomentoV2TokenProviderProps {
+  apiKeyEnvVar?: string;
+  endpointEnvVar?: string;
 }
 
 /**
@@ -333,7 +335,7 @@ export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
  * Reads and parses a momento auth token stored as an environment variable.
  * @export
  * @class EnvMomentoTokenProvider
- * @deprecated use EnvVarV2TokenProvider instead
+ * @deprecated use EnvMomentoV2TokenProvider instead
  */
 export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
   environmentVariableName: string;
@@ -545,49 +547,31 @@ export class ApiKeyV2TokenProvider extends CredentialProviderBase {
   }
 }
 
-export class EnvVarV2TokenProvider extends ApiKeyV2TokenProvider {
+export class EnvMomentoV2TokenProvider extends ApiKeyV2TokenProvider {
   /**
-   * @param {EnvVarV2TokenProviderProps} props configuration options for the token provider
+   * @param {EnvMomentoV2TokenProviderProps} props configuration options for the token provider
    */
-  constructor(props: EnvVarV2TokenProviderProps) {
-    if (!props.apiKeyEnvVar) {
-      throw new Error('Missing required property: apiKeyEnvVar');
-    }
-    if (!props.endpointEnvVar) {
-      throw new Error('Missing required property: endpointEnvVar');
-    }
-    if (!props.apiKeyEnvVar.length) {
-      throw new Error(
-        'API key environment variable name cannot be an empty string'
-      );
-    }
-    if (!props.endpointEnvVar.length) {
-      throw new Error(
-        'Endpoint environment variable name cannot be an empty string'
-      );
-    }
+  constructor(props?: EnvMomentoV2TokenProviderProps) {
+    const apiKeyEnvVar = props?.apiKeyEnvVar || 'MOMENTO_API_KEY';
+    const endpointEnvVar = props?.endpointEnvVar || 'MOMENTO_ENDPOINT';
 
-    const endpoint = process.env[props.endpointEnvVar];
+    const endpoint = process.env[endpointEnvVar];
     if (!endpoint) {
-      throw new Error(
-        `Empty value for environment variable ${props.endpointEnvVar}`
-      );
+      throw new Error(`Empty value for environment variable ${endpointEnvVar}`);
     }
     if (!endpoint.length) {
       throw new Error(
-        `Endpoint environment variable ${props.endpointEnvVar} cannot be an empty string`
+        `Endpoint environment variable ${endpointEnvVar} cannot be an empty string`
       );
     }
 
-    const authToken = process.env[props.apiKeyEnvVar];
+    const authToken = process.env[apiKeyEnvVar];
     if (!authToken) {
-      throw new Error(
-        `Empty value for environment variable ${props.apiKeyEnvVar}`
-      );
+      throw new Error(`Empty value for environment variable ${apiKeyEnvVar}`);
     }
     if (!authToken.length) {
       throw new Error(
-        `API key environment variable ${props.apiKeyEnvVar} cannot be an empty string`
+        `API key environment variable ${apiKeyEnvVar} cannot be an empty string`
       );
     }
 

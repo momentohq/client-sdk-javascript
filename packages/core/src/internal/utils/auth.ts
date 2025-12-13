@@ -19,10 +19,6 @@ export interface LegacyClaims {
 export interface V2Claims {
   /** type of token, 'g' for global api key */
   t: string;
-  /** key ID */
-  id: string;
-  /** optional expiration time as unix timestamp in seconds */
-  exp?: number;
 }
 
 export interface Base64DecodedV1Token {

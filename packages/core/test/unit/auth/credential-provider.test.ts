@@ -22,11 +22,11 @@ const fakeSessionToken =
 const testControlEndpoint = 'control-plane-endpoint.not.a.domain';
 const testCacheEndpoint = 'cache-endpoint.not.a.domain';
 
-const apiKeyEnvVar = 'MOMENTO_TEST_V2_API_KEY';
+const apiKeyEnvVar = 'MOMENTO_API_KEY';
 const testV2ApiKey =
-  'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImlkIjoic29tZS1pZCJ9.WRhKpdh7cFCXO7lAaVojtQAxK6mxMdBrvXTJL1xu94S0d6V1YSstOObRlAIMA7i_yIxO1mWEF3rlF5UNc77VXQ';
+  'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImp0aSI6InNvbWUtaWQifQ.GMr9nA6HE0ttB6llXct_2Sg5-fOKGFbJCdACZFgNbN1fhT6OPg_hVc8ThGzBrWC_RlsBpLA1nzqK3SOJDXYxAw';
 const testEndpoint = 'testEndpoint';
-const endpointEnvVar = 'MOMENTO_TEST_ENDPOINT';
+const endpointEnvVar = 'MOMENTO_ENDPOINT';
 
 describe('StringMomentoTokenProvider', () => {
   it('parses a valid legacy token', () => {
@@ -364,19 +364,35 @@ describe('ApiKeyV2TokenProvider', () => {
   });
 });
 
-describe('EnvVarV2TokenProvider', () => {
+describe('EnvMomentoV2TokenProvider', () => {
   afterEach(() => {
     delete process.env[apiKeyEnvVar];
     delete process.env[endpointEnvVar];
     jest.resetModules();
   });
 
-  it('parses an apiKey from environment variable with endpoint', () => {
+  it('parses an apiKey from environment variable with default names', () => {
     process.env[apiKeyEnvVar] = testV2ApiKey;
     process.env[endpointEnvVar] = testEndpoint;
+    const authProvider = CredentialProvider.fromEnvVarV2();
+    expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${testEndpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(`cache.${testEndpoint}`);
+    expect(authProvider.getTokenEndpoint()).toEqual(`token.${testEndpoint}`);
+    expect(authProvider.areEndpointsOverridden()).toEqual(false);
+    expect(authProvider.isEndpointSecure()).toEqual(true);
+  });
+
+  it('parses an apiKey from environment variable with alternate names', () => {
+    const alternateKeyName = 'ALTERNATE_MOMENTO_API_KEY';
+    const alternateEndpointName = 'ALTERNATE_MOMENTO_ENDPOINT';
+    process.env[alternateKeyName] = testV2ApiKey;
+    process.env[alternateEndpointName] = testEndpoint;
     const authProvider = CredentialProvider.fromEnvVarV2({
-      apiKeyEnvVar,
-      endpointEnvVar,
+      apiKeyEnvVar: alternateKeyName,
+      endpointEnvVar: alternateEndpointName,
     });
     expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
     expect(authProvider.getControlEndpoint()).toEqual(
@@ -388,88 +404,64 @@ describe('EnvVarV2TokenProvider', () => {
     expect(authProvider.isEndpointSecure()).toEqual(true);
   });
 
-  it('throws an error when api key env var is not set', () => {
-    process.env[endpointEnvVar] = testEndpoint;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar,
-      })
-    ).toThrowError(`Empty value for environment variable ${apiKeyEnvVar}`);
-  });
-
-  it('throws an error when endpoint env var is not set', () => {
-    process.env[apiKeyEnvVar] = testV2ApiKey;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar,
-      })
-    ).toThrowError(`Empty value for environment variable ${endpointEnvVar}`);
-  });
-
   it('throws an error when api key env var is empty', () => {
     process.env[apiKeyEnvVar] = '';
     process.env[endpointEnvVar] = testEndpoint;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar,
-      })
-    ).toThrowError(`Empty value for environment variable ${apiKeyEnvVar}`);
+    expect(() => CredentialProvider.fromEnvVarV2()).toThrowError(
+      `Empty value for environment variable ${apiKeyEnvVar}`
+    );
   });
 
-  it('throws an error when endpoint is missing', () => {
+  it('throws an error when endpoint env var is empty', () => {
     process.env[apiKeyEnvVar] = testV2ApiKey;
     process.env[endpointEnvVar] = '';
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar,
-      })
-    ).toThrowError(`Empty value for environment variable ${endpointEnvVar}`);
+    expect(() => CredentialProvider.fromEnvVarV2()).toThrowError(
+      `Empty value for environment variable ${endpointEnvVar}`
+    );
   });
 
-  it('throws an error when api key env var name is missing', () => {
-    process.env[endpointEnvVar] = testEndpoint;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar: '',
-        endpointEnvVar,
-      })
-    ).toThrowError();
-  });
-
-  it('throws an error when endpoint env var name is missing', () => {
+  it('uses default when api key env var name is missing', () => {
     process.env[apiKeyEnvVar] = testV2ApiKey;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar: '',
-      })
-    ).toThrowError();
+    process.env[endpointEnvVar] = testEndpoint;
+    const authProvider = CredentialProvider.fromEnvVarV2({
+      apiKeyEnvVar: '',
+    });
+    expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${testEndpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(`cache.${testEndpoint}`);
+    expect(authProvider.getTokenEndpoint()).toEqual(`token.${testEndpoint}`);
+    expect(authProvider.areEndpointsOverridden()).toEqual(false);
+    expect(authProvider.isEndpointSecure()).toEqual(true);
+  });
+
+  it('uses default when endpoint env var name is missing', () => {
+    process.env[apiKeyEnvVar] = testV2ApiKey;
+    process.env[endpointEnvVar] = testEndpoint;
+    const authProvider = CredentialProvider.fromEnvVarV2({
+      endpointEnvVar: '',
+    });
+    expect(authProvider.getAuthToken()).toEqual(testV2ApiKey);
+    expect(authProvider.getControlEndpoint()).toEqual(
+      `control.${testEndpoint}`
+    );
+    expect(authProvider.getCacheEndpoint()).toEqual(`cache.${testEndpoint}`);
+    expect(authProvider.getTokenEndpoint()).toEqual(`token.${testEndpoint}`);
+    expect(authProvider.areEndpointsOverridden()).toEqual(false);
+    expect(authProvider.isEndpointSecure()).toEqual(true);
   });
 
   it('throws an error when provided with a v1 api key', () => {
     process.env[apiKeyEnvVar] = fakeTestV1ApiKey;
     process.env[endpointEnvVar] = testEndpoint;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar,
-      })
-    ).toThrowError();
+    expect(() => CredentialProvider.fromEnvVarV2()).toThrowError();
   });
 
   it('throws an error when provided with a pre-v1 api key', () => {
     process.env[apiKeyEnvVar] = fakeTestLegacyToken;
     process.env[endpointEnvVar] = testEndpoint;
-    expect(() =>
-      CredentialProvider.fromEnvVarV2({
-        apiKeyEnvVar,
-        endpointEnvVar,
-      })
-    ).toThrowError();
+    expect(() => CredentialProvider.fromEnvVarV2()).toThrowError();
   });
 });
 
