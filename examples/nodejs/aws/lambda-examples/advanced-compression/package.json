@@ -1,18 +1,18 @@
 {
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.110",
-    "@types/node": "^18.13.0",
-    "nodemon": "^2.0.20",
-    "serverless": "^3.38.0",
-    "serverless-better-credentials": "^2.0.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.5"
+    "@types/aws-lambda": "8.10.110",
+    "@types/node": "18.13.0",
+    "nodemon": "2.0.20",
+    "serverless": "3.38.0",
+    "serverless-better-credentials": "2.0.0",
+    "ts-node": "10.9.1",
+    "typescript": "4.9.5"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.115.1",
-    "@gomomento/sdk-nodejs-compression-zstd": "^0.115.1",
-    "aws-lambda": "^1.0.7",
-    "esbuild": "^0.20.2"
+    "@gomomento/sdk": "1.116.0",
+    "@gomomento/sdk-nodejs-compression-zstd": "0.116.0",
+    "aws-lambda": "1.0.7",
+    "esbuild": "0.25.0"
   },
   "scripts": {
     "prebuild": "rm -rf dist",

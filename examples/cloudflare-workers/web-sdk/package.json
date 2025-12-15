@@ -8,13 +8,13 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230419.0",
-    "typescript": "^5.0.4",
-    "wrangler": "^3.0.0"
+    "@cloudflare/workers-types": "4.20230419.0",
+    "typescript": "5.0.4",
+    "wrangler": "3.0.0"
   },
   "dependencies": {
-    "@gomomento/sdk-core": "^1.40.0",
-    "@gomomento/sdk-web": "^1.115.1",
-    "xhr4sw": "^0.0.5"
+    "@gomomento/sdk-core": "1.40.0",
+    "@gomomento/sdk-web": "1.116.0",
+    "xhr4sw": "0.0.5"
   }
 }
