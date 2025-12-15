@@ -2,6 +2,7 @@ import {
   AllEndpoints,
   decodeAuthToken,
   fromEntries,
+  isV2ApiKey,
   populateAllEndpointsFromBaseEndpoint,
 } from '../internal/utils';
 
@@ -96,22 +97,47 @@ export abstract class CredentialProvider {
    */
   abstract isEndpointSecure(): boolean;
 
+  /**
+   * @deprecated use fromEnvVarV2() instead
+   */
   static fromEnvironmentVariable(
     props: EnvMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new EnvMomentoTokenProvider(props);
   }
 
+  /**
+   * @deprecated use fromEnvVarV2() instead
+   */
   static fromEnvVar(
     props: EnvMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new EnvMomentoTokenProvider(props);
   }
 
+  /**
+   * @deprecated use fromApiKeyV2() or fromDisposableToken() instead
+   */
   static fromString(
     props: StringMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new StringMomentoTokenProvider(props);
+  }
+
+  static fromDisposableToken(
+    props: StringMomentoTokenProviderProps | string
+  ): CredentialProvider {
+    return new StringMomentoTokenProvider(props);
+  }
+
+  static fromEnvVarV2(
+    props?: EnvMomentoV2TokenProviderProps
+  ): CredentialProvider {
+    return new EnvMomentoV2TokenProvider(props);
+  }
+
+  static fromApiKeyV2(props: ApiKeyV2TokenProviderProps): CredentialProvider {
+    return new ApiKeyV2TokenProvider(props);
   }
 
   /**
@@ -174,10 +200,20 @@ export type StringMomentoTokenProviderProps =
   | StringMomentoApiKeyProviderProps
   | StringMomentoAuthTokenProviderProps;
 
+export type ApiKeyV2TokenProviderProps = StringMomentoTokenProviderProps & {
+  endpoint: string;
+};
+
+export interface EnvMomentoV2TokenProviderProps {
+  apiKeyEnvVar?: string;
+  endpointEnvVar?: string;
+}
+
 /**
  * Reads and parses a momento auth token stored in a String
  * @export
  * @class StringMomentoTokenProvider
+ * @deprecated use ApiKeyV2TokenProvider instead
  */
 export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly apiKey: string;
@@ -299,6 +335,7 @@ export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
  * Reads and parses a momento auth token stored as an environment variable.
  * @export
  * @class EnvMomentoTokenProvider
+ * @deprecated use EnvMomentoV2TokenProvider instead
  */
 export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
   environmentVariableName: string;
@@ -324,6 +361,7 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
 }
 
 export function getDefaultCredentialProvider(): CredentialProvider {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   return CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
 }
 
@@ -415,5 +453,136 @@ export class MomentoLocalProvider implements CredentialProvider {
 
   withMomentoLocal(): CredentialProvider {
     return new MomentoLocalProvider();
+  }
+}
+
+export class ApiKeyV2TokenProvider extends CredentialProviderBase {
+  private readonly apiKey: string;
+  private readonly allEndpoints: AllEndpoints;
+
+  /**
+   * @param {ApiKeyV2TokenProviderProps} props configuration options for the token provider
+   */
+  constructor(props: ApiKeyV2TokenProviderProps) {
+    super();
+    let key: string;
+    if ('authToken' in props) {
+      key = props.authToken;
+    } else if ('apiKey' in props) {
+      key = props.apiKey;
+    } else {
+      throw new Error('Missing required property: authToken or apiKey');
+    }
+    if (!key.length) {
+      throw new Error('API key cannot be an empty string');
+    }
+    if (!isV2ApiKey(key)) {
+      throw new Error(
+        'Received an invalid v2 API key. Are you using the correct key? Or did you mean to use `fromString()` with a legacy key instead?'
+      );
+    }
+
+    let endpoint: string;
+    if ('endpoint' in props) {
+      endpoint = props.endpoint;
+    } else {
+      throw new Error('Missing required property: endpoint');
+    }
+    if (!endpoint.length) {
+      throw new Error('Endpoint cannot be an empty string');
+    }
+
+    this.apiKey = key;
+    this.allEndpoints = {
+      controlEndpoint: 'control.' + endpoint,
+      cacheEndpoint: 'cache.' + endpoint,
+      tokenEndpoint: 'token.' + endpoint,
+    };
+  }
+
+  getAuthToken(): string {
+    return this.apiKey;
+  }
+
+  getCacheEndpoint(): string {
+    return this.allEndpoints.cacheEndpoint;
+  }
+  isCacheEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  getControlEndpoint(): string {
+    return this.allEndpoints.controlEndpoint;
+  }
+
+  isControlEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  getTokenEndpoint(): string {
+    return this.allEndpoints.tokenEndpoint;
+  }
+
+  isTokenEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  isStorageEndpointSecure(): boolean {
+    return this.isEndpointSecure();
+  }
+
+  areEndpointsOverridden(): boolean {
+    return false;
+  }
+
+  isEndpointSecure(): boolean {
+    if (this.allEndpoints.secureConnection === undefined) {
+      return true;
+    }
+    return this.allEndpoints.secureConnection;
+  }
+
+  withMomentoLocal(): CredentialProvider {
+    return new MomentoLocalProvider();
+  }
+}
+
+export class EnvMomentoV2TokenProvider extends ApiKeyV2TokenProvider {
+  /**
+   * @param {EnvMomentoV2TokenProviderProps} props configuration options for the token provider
+   */
+  constructor(props?: EnvMomentoV2TokenProviderProps) {
+    const apiKeyEnvVar = props?.apiKeyEnvVar || 'MOMENTO_API_KEY';
+    const endpointEnvVar = props?.endpointEnvVar || 'MOMENTO_ENDPOINT';
+
+    const endpoint = process.env[endpointEnvVar];
+    if (!endpoint) {
+      throw new Error(`Empty value for environment variable ${endpointEnvVar}`);
+    }
+    if (!endpoint.length) {
+      throw new Error(
+        `Endpoint environment variable ${endpointEnvVar} cannot be an empty string`
+      );
+    }
+
+    const authToken = process.env[apiKeyEnvVar];
+    if (!authToken) {
+      throw new Error(`Empty value for environment variable ${apiKeyEnvVar}`);
+    }
+    if (!authToken.length) {
+      throw new Error(
+        `API key environment variable ${apiKeyEnvVar} cannot be an empty string`
+      );
+    }
+
+    if (!isV2ApiKey(authToken)) {
+      throw new Error(
+        'Received an invalid v2 API key. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` with a legacy key instead?'
+      );
+    }
+    super({
+      authToken: authToken,
+      endpoint: endpoint,
+    });
   }
 }

@@ -16,6 +16,11 @@ export interface LegacyClaims {
   c: string;
 }
 
+export interface V2Claims {
+  /** type of token, 'g' for global api key */
+  t: string;
+}
+
 export interface Base64DecodedV1Token {
   api_key: string;
   endpoint: string;
@@ -23,6 +28,14 @@ export interface Base64DecodedV1Token {
 
 function decodeAuthTokenClaims<T>(authToken: string): T {
   return jwtDecode<T>(authToken);
+}
+
+export function isV2ApiKey(authToken: string): boolean {
+  if (isBase64(authToken)) {
+    return false;
+  }
+  const decodedLegacyToken = decodeAuthTokenClaims<V2Claims>(authToken);
+  return decodedLegacyToken.t === 'g';
 }
 
 interface TokenAndEndpoints {
@@ -88,6 +101,12 @@ export const decodeAuthToken = (token?: string): TokenAndEndpoints => {
         authToken: base64DecodedToken.api_key,
       };
     } else {
+      if (isV2ApiKey(token)) {
+        throw new InvalidArgumentError(
+          'Received a v2 API key. Are you using the correct key? Or did you mean to use `fromApiKeyV2()` or `fromEnvVarV2()` instead?'
+        );
+      }
+
       // This decode function uses generics to advertise that we will usually expect to find the LegacyClaims.  However,
       // if the token is a valid JWT but not actually one of our legacy tokens, the endpoint claims will be undefined,
       // which is why the return type for this function specifies that the controlEndpoint/cacheEndpoint may be undefined.
