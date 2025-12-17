@@ -360,9 +360,13 @@ export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
   }
 }
 
+/**
+ * Provides the default credential provider which reads from environment variables MOMENTO_API_KEY and MOMENTO_ENDPOINT.
+ * @export
+ * @returns {CredentialProvider} the default credential provider
+ */
 export function getDefaultCredentialProvider(): CredentialProvider {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  return CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
+  return CredentialProvider.fromEnvVarV2();
 }
 
 export interface MomentoLocalProviderProps extends CredentialProviderProps {
