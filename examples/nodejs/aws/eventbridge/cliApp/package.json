@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.596.0",
-    "@gomomento/sdk": "1.116.0",
+    "@gomomento/sdk": "1.117.1",
     "dotenv": "16.4.5"
   },
   "engines": {
