@@ -2044,7 +2044,9 @@ async function main() {
     await example_API_KeysExist(cacheClient, cacheName);
 
     example_API_InstantiateAuthClient();
-    const authClient = new AuthClient({});
+    const authClient = new AuthClient({
+      credentialProvider: CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
+    });
     await example_API_GenerateApiKey(authClient);
     await example_API_RefreshApiKey(authClient);
     await example_API_GenerateDisposableToken(authClient);
