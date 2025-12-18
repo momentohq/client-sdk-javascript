@@ -8,7 +8,7 @@
  * a second file in the future if desired.
  *
  */
-import { CacheClient, Configurations, CredentialProvider } from '@gomomento/sdk';
+import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 const database: Map<string, string> = new Map();
 database.set('test-key', 'test-value');

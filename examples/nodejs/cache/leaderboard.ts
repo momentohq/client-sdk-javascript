@@ -94,7 +94,7 @@ async function main() {
   for (let rank = 0; rank < 5; rank += 2) {
     const startRank = rank;
     const endRank = rank + 2;
-    const fetchByRank = await leaderboard.fetchByRank(startRank, endRank, { order: LeaderboardOrder.Ascending });
+    const fetchByRank = await leaderboard.fetchByRank(startRank, endRank, {order: LeaderboardOrder.Ascending});
     switch (fetchByRank.type) {
       case LeaderboardFetchResponse.Success:
         console.log('Fetch by rank success:', fetchByRank.values());

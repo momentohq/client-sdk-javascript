@@ -66,7 +66,7 @@ async function main() {
   }
 
   // 7. Fetch the top 5 elements in the leaderboard and print scores and corresponding strings
-  const fetchResponse = await leaderboard.fetchByRank(0, 5, { order: LeaderboardOrder.Descending });
+  const fetchResponse = await leaderboard.fetchByRank(0, 5, {order: LeaderboardOrder.Descending});
   switch (fetchResponse.type) {
     case LeaderboardFetchResponse.Success: {
       const elements = fetchResponse.values();

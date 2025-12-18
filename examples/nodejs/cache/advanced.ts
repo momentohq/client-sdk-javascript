@@ -12,9 +12,9 @@ import {
   CacheGetResponse,
   CacheDeleteResponse,
 } from '@gomomento/sdk';
-import { range } from './utils/collections';
+import {range} from './utils/collections';
 import * as fs from 'fs';
-import { delay } from './utils/time';
+import {delay} from './utils/time';
 
 const cacheName = 'cache';
 const cacheKey = 'key';

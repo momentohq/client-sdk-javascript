@@ -31,12 +31,12 @@ async function main() {
   }
 
   const items: Array<BatchUtils.BatchSetItem> = [
-    { key: 'a', value: 'apple' },
-    { key: 'b', value: 'berry' },
-    { key: 'c', value: 'cantaloupe' },
-    { key: '1', value: 'first' },
-    { key: '2', value: 'second' },
-    { key: '3', value: 'third' },
+    {key: 'a', value: 'apple'},
+    {key: 'b', value: 'berry'},
+    {key: 'c', value: 'cantaloupe'},
+    {key: '1', value: 'first'},
+    {key: '2', value: 'second'},
+    {key: '3', value: 'third'},
   ];
   const setResponse = await BatchUtils.batchSet(cacheClient, cacheName, items);
   console.log('\nValues set for the following keys?');

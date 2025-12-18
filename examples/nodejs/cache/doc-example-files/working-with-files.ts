@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import { CacheClient, CacheGetResponse, CacheSetResponse, Configurations, CredentialProvider } from '@gomomento/sdk';
+import {CacheClient, CacheGetResponse, CacheSetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
 
 const filePath = './myfile.json';
 const fileName = 'myfile';
