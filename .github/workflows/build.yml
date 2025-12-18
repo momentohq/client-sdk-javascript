@@ -356,7 +356,9 @@ jobs:
     name: Test Cache on Node ${{ matrix.node }}
     runs-on: ubuntu-latest
     env:
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_API_KEY_V2 }}
+      MOMENTO_ENDPOINT: "cell-alpha-dev.preprod.a.momentohq.com"
+      V1_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
       TEST_MGA_ACCOUNT_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_ACCOUNT_SESSION_TOKEN }}
 
@@ -382,9 +384,8 @@ jobs:
     name: Test examples on node ${{ matrix.node }}
     runs-on: ubuntu-24.04
     env:
-      # TODO: remove token stored as secret in favor of using a
-      # momento-local instance that can be spun up for testing
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_API_KEY_V2 }}
+      MOMENTO_ENDPOINT: "cell-alpha-dev.preprod.a.momentohq.com"
 
     steps:
       - name: Setup repo
@@ -478,9 +479,8 @@ jobs:
     name: Test web examples on node ${{ matrix.node }}
     runs-on: ubuntu-24.04
     env:
-      # TODO: remove token stored as secret in favor of using a
-      # momento-local instance that can be spun up for testing
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_API_KEY_V2 }}
+      MOMENTO_ENDPOINT: "cell-alpha-dev.preprod.a.momentohq.com"
 
     steps:
       - name: Setup repo
