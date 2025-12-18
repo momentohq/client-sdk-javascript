@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "example": "tsc && node dist/basic.js",
+    "basic": "tsc && node dist/basic.js",
     "advanced": "tsc && node dist/advanced.js",
     "dictionary": "tsc && node dist/dictionary.js",
     "tokens": "tsc && node dist/refresh-disposable-tokens.js",

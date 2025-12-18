@@ -6,8 +6,9 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
-    "example": "tsc && node dist/basic.js",
-    "validate-examples": "tsc && node dist/basic.js",
+    "basic": "tsc && node dist/basic.js",
+    "readme": "tsc && node dist/readme.js",
+    "validate-examples": "tsc && node dist/basic.js && node dist/readme.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"

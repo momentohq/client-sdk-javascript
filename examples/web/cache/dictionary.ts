@@ -9,7 +9,6 @@ import {
   Configurations,
   CreateCacheResponse,
   DefaultMomentoLoggerFactory,
-  EnvMomentoTokenProvider,
   MomentoLoggerFactory,
 } from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
@@ -17,16 +16,11 @@ import {initJSDom} from './utils/jsdom';
 const cacheName = 'cache';
 const dictionaryName = 'dictionary';
 
-const credentialsProvider = new EnvMomentoTokenProvider({
-  environmentVariableName: 'MOMENTO_API_KEY',
-});
-
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 
 const defaultTtl = 60;
 const momento = new CacheClient({
   configuration: Configurations.Laptop.v1(loggerFactory),
-  credentialProvider: credentialsProvider,
   defaultTtlSeconds: defaultTtl,
 });
 

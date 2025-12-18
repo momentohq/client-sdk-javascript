@@ -36,7 +36,7 @@ function analyzeDictionaryContents(
     numKeysRead++;
     totalBytesRead += key.length + value.length;
   }
-  return {numKeysRead, totalBytesRead};
+  return { numKeysRead, totalBytesRead };
 }
 
 class ShardedDictionary {
@@ -131,7 +131,7 @@ async function main() {
   const cacheName = 'cache';
   const shardedDictionaryName = 'myShardedDictionary';
 
-  const credentialsProvider = CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
+  const credentialsProvider = CredentialProvider.fromEnvVarV2();
   const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
   const logger = loggerFactory.getLogger('shardedDictionaryExample');
 
@@ -189,7 +189,7 @@ async function main() {
   const fetchStartTime = new Date().getTime();
   const entireDictionaryContents: Record<string, string> = await shardedDictionary.fetch();
   logger.info(`Fetched sharded dictionary in ${new Date().getTime() - fetchStartTime} ms`);
-  const {numKeysRead, totalBytesRead} = analyzeDictionaryContents(logger, entireDictionaryContents);
+  const { numKeysRead, totalBytesRead } = analyzeDictionaryContents(logger, entireDictionaryContents);
 
   logger.info(`Final sharded dictionary contained ${numKeysRead} keys and ${totalBytesRead} bytes`);
 
@@ -203,7 +203,7 @@ async function main() {
     switch (dictionaryContentsResponse.type) {
       case CacheDictionaryFetchResponse.Hit: {
         const dictionaryContents = dictionaryContentsResponse.value();
-        const {numKeysRead, totalBytesRead} = analyzeDictionaryContents(logger, dictionaryContents);
+        const { numKeysRead, totalBytesRead } = analyzeDictionaryContents(logger, dictionaryContents);
         logger.info(`Individual dictionary contained ${numKeysRead} keys and ${totalBytesRead} bytes`);
         break;
       }

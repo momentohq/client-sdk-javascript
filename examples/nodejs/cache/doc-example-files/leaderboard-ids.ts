@@ -15,9 +15,7 @@ async function main() {
   // 1. Create a CacheClient to connect to Momento
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 
@@ -37,9 +35,7 @@ async function main() {
   // 3. Create a Leaderboard client
   const client = new PreviewLeaderboardClient({
     configuration: LeaderboardConfigurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
   });
 
   // 4. Create a leaderboard with given cache and leaderboard names
@@ -70,7 +66,7 @@ async function main() {
   }
 
   // 7. Fetch the top 5 elements in the leaderboard and print scores and corresponding strings
-  const fetchResponse = await leaderboard.fetchByRank(0, 5, {order: LeaderboardOrder.Descending});
+  const fetchResponse = await leaderboard.fetchByRank(0, 5, { order: LeaderboardOrder.Descending });
   switch (fetchResponse.type) {
     case LeaderboardFetchResponse.Success: {
       const elements = fetchResponse.values();

@@ -12,9 +12,9 @@ import {
   CacheGetResponse,
   CacheDeleteResponse,
 } from '@gomomento/sdk';
-import {range} from './utils/collections';
+import { range } from './utils/collections';
 import * as fs from 'fs';
-import {delay} from './utils/time';
+import { delay } from './utils/time';
 
 const cacheName = 'cache';
 const cacheKey = 'key';
@@ -30,7 +30,7 @@ let momento: CacheClient;
 async function main() {
   momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(loggerFactory),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
   await createCacheExample();
@@ -148,7 +148,7 @@ async function middlewaresExample() {
         perRequestMetricsCSVPath: metricsCsvPath,
       })
     ),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 

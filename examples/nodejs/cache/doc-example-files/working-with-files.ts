@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import {CacheClient, CacheGetResponse, CacheSetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
+import { CacheClient, CacheGetResponse, CacheSetResponse, Configurations, CredentialProvider } from '@gomomento/sdk';
 
 const filePath = './myfile.json';
 const fileName = 'myfile';
@@ -20,9 +20,7 @@ function readFile(filePath: string) {
 function createCacheClient(): Promise<CacheClient> {
   return CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 600,
   });
 }
