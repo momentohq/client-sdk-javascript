@@ -22,7 +22,9 @@ import {initJSDom} from './utils/jsdom';
 // for more information about deploying your own token vending machine.
 
 async function localTokenVendingMachine(): Promise<{token: string; expiresAt: ExpiresAt}> {
-  const authClient = new AuthClient();
+  const authClient = new AuthClient({
+    credentialProvider: CredentialProvider.fromEnvVar('V1_API_KEY'),
+  });
   const tokenResponse = await authClient.generateDisposableToken(
     DisposableTokenScopes.topicPublishSubscribe('my-cache', AllTopics),
     ExpiresIn.seconds(30)
