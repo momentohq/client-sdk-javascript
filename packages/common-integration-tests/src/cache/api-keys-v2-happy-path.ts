@@ -1820,27 +1820,29 @@ export function runCacheTestWithApiKeyV2(
         const field2 = 'bar';
         const field3 = 'abc';
         const field4 = 'def';
-        const promises = [
-          cacheClient.sortedSetPutElements(
-            integrationTestCacheName,
-            sourceSets[0].sortedSetName,
-            new Map([
-              [field1, 1],
-              [field2, 2],
-            ])
-          ),
-          cacheClient.sortedSetPutElements(
-            integrationTestCacheName,
-            sourceSets[1].sortedSetName,
-            new Map([
-              [field3, 3],
-              [field4, 4],
-            ])
-          ),
-        ];
-        Promise.all(promises).catch(e => {
-          throw e;
-        });
+        const put1 = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
+          sourceSets[0].sortedSetName,
+          new Map([
+            [field1, 1],
+            [field2, 2],
+          ])
+        );
+        expectWithMessage(() => {
+          expect(put1).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected Success but got ${put1.toString()}`);
+
+        const put2 = await cacheClient.sortedSetPutElements(
+          integrationTestCacheName,
+          sourceSets[1].sortedSetName,
+          new Map([
+            [field3, 3],
+            [field4, 4],
+          ])
+        );
+        expectWithMessage(() => {
+          expect(put2).toBeInstanceOf(CacheSortedSetPutElements.Success);
+        }, `expected Success but got ${put2.toString()}`);
 
         const destSetName = v4();
         const response = await cacheClient.sortedSetUnionStore(
