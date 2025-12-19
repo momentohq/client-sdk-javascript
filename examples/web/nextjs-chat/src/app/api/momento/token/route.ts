@@ -15,7 +15,7 @@ import { type NextRequest } from "next/server";
 
 const authClient = new AuthClient({
   credentialProvider: CredentialProvider.fromString({
-    apiKey: process.env.MOMENTO_API_KEY,
+    apiKey: process.env.V1_API_KEY,
   }),
 });
 
