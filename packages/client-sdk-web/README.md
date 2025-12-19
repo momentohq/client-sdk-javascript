@@ -29,7 +29,7 @@ node.js server-side applications, check out the [Momento Node.js SDK](../client-
 ## Usage
 
 ```javascript
-import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk-web';
+import {CacheClient, Configurations} from '@gomomento/sdk-web';
 import {initJSDom} from './utils/jsdom';
 async function main() {
   // Because the Momento Web SDK is intended for use in a browser, we use the JSDom library to set up an environment
@@ -37,7 +37,6 @@ async function main() {
   initJSDom();
   const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 
