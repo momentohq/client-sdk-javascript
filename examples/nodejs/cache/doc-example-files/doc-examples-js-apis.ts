@@ -2062,7 +2062,6 @@ async function main() {
     example_API_InstantiateLeaderboardClient();
     const leaderboardClient = new PreviewLeaderboardClient({
       configuration: LeaderboardConfigurations.Laptop.v1(),
-      credentialProvider: CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
     });
     const leaderboard = leaderboardClient.leaderboard(cacheName, 'momento-leaderboard');
     example_API_CreateLeaderboard(leaderboardClient, cacheName);
