@@ -14,7 +14,7 @@ async function main() {
   // 1. Create a CacheClient to connect to Momento
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvVar('V1_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 
