@@ -10,7 +10,7 @@
     "topic-subscribe": "tsc && node dist/topic-subscribe.js",
     "topic-publish": "tsc && node dist/topic-publish.js",
     "topic-refresh-token": "tsc && node dist/topic-refresh-token.js",
-    "validate-examples": "tsc && node dist/cheat-sheet-main.jss",
+    "validate-examples": "tsc && node dist/cheat-sheet-main.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"
