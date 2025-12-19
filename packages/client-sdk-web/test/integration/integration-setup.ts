@@ -31,7 +31,7 @@ export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
     if (isLocalhostDevelopmentMode()) {
       _credsProvider = CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'MOMENTO_API_KEY',
+        environmentVariableName: 'V1_API_KEY',
         endpointOverrides: {
           controlEndpoint: 'https://no-controlplane-requests-allowed:9001',
           cacheEndpoint: 'https://localhost:9001',
@@ -39,11 +39,19 @@ export function credsProvider(): CredentialProvider {
         },
       });
     } else {
-      _credsProvider =
-        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
+      _credsProvider = CredentialProvider.fromEnvironmentVariable('V1_API_KEY');
     }
   }
   return _credsProvider;
+}
+
+let _credsProviderV2: CredentialProvider | undefined = undefined;
+export function credsProviderV2(): CredentialProvider {
+  if (_credsProviderV2 === undefined) {
+    // Looks for MOMENTO_API_KEY and MOMENTO_ENDPOINT environment variables
+    _credsProviderV2 = CredentialProvider.fromEnvVarV2();
+  }
+  return _credsProviderV2;
 }
 
 function mgaAccountSessionTokenCredsProvider(): CredentialProvider {
@@ -68,7 +76,9 @@ function useConsistentReads(): boolean {
   return process.argv.find(arg => arg === 'useConsistentReads') !== undefined;
 }
 
-function integrationTestCacheClientProps(): CacheClientAllProps {
+function integrationTestCacheClientProps(
+  apiKeyV2 = false
+): CacheClientAllProps {
   const readConcern = useConsistentReads()
     ? ReadConcern.CONSISTENT
     : ReadConcern.BALANCED;
@@ -77,13 +87,13 @@ function integrationTestCacheClientProps(): CacheClientAllProps {
     configuration: Configurations.Laptop.latest()
       .withClientTimeoutMillis(90000)
       .withReadConcern(readConcern),
-    credentialProvider: credsProvider(),
+    credentialProvider: apiKeyV2 ? credsProviderV2() : credsProvider(),
     defaultTtlSeconds: 1111,
   };
 }
 
-function momentoClientForTesting(): CacheClient {
-  return new CacheClient(integrationTestCacheClientProps());
+function momentoClientForTesting(apiKeyV2 = false): CacheClient {
+  return new CacheClient(integrationTestCacheClientProps(apiKeyV2));
 }
 
 function momentoClientWithThrowOnErrorsForTesting(): CacheClient {
@@ -101,10 +111,10 @@ function momentoCacheClientForTestingWithMgaAccountSessionToken(): CacheClient {
   });
 }
 
-function momentoTopicClientForTesting(): TopicClient {
+function momentoTopicClientForTesting(apiKeyV2 = false): TopicClient {
   return new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
-    credentialProvider: credsProvider(),
+    credentialProvider: apiKeyV2 ? credsProviderV2() : credsProvider(),
   });
 }
 
@@ -138,9 +148,11 @@ function momentoTopicClientForTestingWithMgaAccountSessionToken(): TopicClient {
   });
 }
 
-function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
+function momentoLeaderboardClientForTesting(
+  apiKeyV2 = false
+): PreviewLeaderboardClient {
   return new PreviewLeaderboardClient({
-    credentialProvider: credsProvider(),
+    credentialProvider: apiKeyV2 ? credsProviderV2() : credsProvider(),
     configuration: LeaderboardConfigurations.Laptop.latest(),
   });
 }
@@ -158,8 +170,10 @@ export function SetupIntegrationTest(): {
   cacheClientWithThrowOnErrors: CacheClient;
   cacheClientWithBalancedReadConcern: CacheClient;
   cacheClientWithConsistentReadConcern: CacheClient;
+  cacheClientApiKeyV2: CacheClient;
   integrationTestCacheName: string;
   credentialProvider: CredentialProvider;
+  credentialProviderV2: CredentialProvider;
 } {
   const cacheName = testCacheName();
 
@@ -179,34 +193,41 @@ export function SetupIntegrationTest(): {
     }
   });
 
-  const client = momentoClientForTesting();
-  const clientWithThrowOnErrors = momentoClientWithThrowOnErrorsForTesting();
-  const clientWithBalancedReadConcern =
+  const cacheClient = momentoClientForTesting();
+  const cacheClientWithThrowOnErrors =
+    momentoClientWithThrowOnErrorsForTesting();
+  const cacheClientWithBalancedReadConcern =
     momentoClientForTestingBalancedReadConcern();
-  const clientWithConsistentReadConcern =
+  const cacheClientWithConsistentReadConcern =
     momentoClientForTestingConsistentReadConcern();
+  const cacheClientApiKeyV2 = momentoClientForTesting(true);
   return {
-    cacheClient: client,
-    cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
-    cacheClientWithBalancedReadConcern: clientWithBalancedReadConcern,
-    cacheClientWithConsistentReadConcern: clientWithConsistentReadConcern,
+    cacheClient,
+    cacheClientWithThrowOnErrors,
+    cacheClientWithBalancedReadConcern,
+    cacheClientWithConsistentReadConcern,
+    cacheClientApiKeyV2,
     integrationTestCacheName: cacheName,
     credentialProvider: credsProvider(),
+    credentialProviderV2: credsProviderV2(),
   };
 }
 
 export function SetupTopicIntegrationTest(): {
   topicClient: ITopicClient;
+  topicClientApiKeyV2: TopicClient;
   topicClientWithThrowOnErrors: ITopicClient;
   cacheClient: CacheClient;
   integrationTestCacheName: string;
 } {
   const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
+  const topicClientApiKeyV2 = momentoTopicClientForTesting(true);
   const topicClientWithThrowOnErrors =
     momentoTopicClientWithThrowOnErrorsForTesting();
   return {
     topicClient,
+    topicClientApiKeyV2,
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
@@ -215,6 +236,7 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupLeaderboardIntegrationTest(): {
   leaderboardClient: PreviewLeaderboardClient;
+  leaderboardClientApiKeyV2: PreviewLeaderboardClient;
   leaderboardClientWithThrowOnErrors: PreviewLeaderboardClient;
   integrationTestCacheName: string;
 } {
@@ -222,8 +244,10 @@ export function SetupLeaderboardIntegrationTest(): {
   const leaderboardClient = momentoLeaderboardClientForTesting();
   const leaderboardClientWithThrowOnErrors =
     momentoLeaderboardClientWithThrowOnErrorsForTesting();
+  const leaderboardClientApiKeyV2 = momentoLeaderboardClientForTesting(true);
   return {
     leaderboardClient,
+    leaderboardClientApiKeyV2,
     leaderboardClientWithThrowOnErrors,
     integrationTestCacheName: integrationTestCacheName,
   };

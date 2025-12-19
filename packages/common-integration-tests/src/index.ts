@@ -14,3 +14,4 @@ export * from './cache/update-ttl';
 export * from './leaderboard/leaderboard-client';
 export * from './cache/batch-get-set';
 export * from './cache/replica-reads';
+export * from './cache/api-keys-v2-happy-path';

@@ -207,3 +207,10 @@ export function expectWithMessage(expected: () => void, message: string) {
     throw new Error(message);
   }
 }
+
+export function zipToRecord<V>(keys: string[], values: V[]): Record<string, V> {
+  return keys.reduce<Record<string, V>>((acc, key, index) => {
+    acc[key] = values[index];
+    return acc;
+  }, {} as Record<string, V>);
+}

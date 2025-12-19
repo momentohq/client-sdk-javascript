@@ -73,7 +73,7 @@ async function main() {
       compressorFactory: CompressorFactory.default(),
       compressionLevel: CompressionLevel.Balanced,
     }),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 

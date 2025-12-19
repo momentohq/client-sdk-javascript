@@ -1,4 +1,5 @@
 import {
+  CredentialProvider,
   CacheClient,
   CacheDictionaryFetchResponse,
   CacheDictionaryGetFieldResponse,
@@ -9,16 +10,13 @@ import {
   Configurations,
   CreateCacheResponse,
   DefaultMomentoLoggerFactory,
-  EnvMomentoTokenProvider,
   MomentoLoggerFactory,
 } from '@gomomento/sdk';
 
 const cacheName = 'cache';
 const dictionaryName = 'dictionary';
 
-const credentialsProvider = new EnvMomentoTokenProvider({
-  environmentVariableName: 'MOMENTO_API_KEY',
-});
+const credentialsProvider = CredentialProvider.fromEnvVarV2();
 
 const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory();
 

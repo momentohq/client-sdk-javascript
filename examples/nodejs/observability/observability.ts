@@ -5,14 +5,7 @@ example_observability_setupMetrics();
 // Note that these must run before anything else to properly instrument the gRPC calls and
 // configure OpenTelemetry to send metrics to Prometheus and traces to Zipkin.
 
-import {
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  CreateCacheResponse,
-  CacheSetResponse,
-  CacheGetResponse,
-} from '@gomomento/sdk';
+import {CacheClient, Configurations, CreateCacheResponse, CacheSetResponse, CacheGetResponse} from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from './example-metric-middleware';
 import {uuid} from 'uuidv4';
 
@@ -22,7 +15,6 @@ async function main() {
     configuration: Configurations.Laptop.v1()
       // This is where the middleware that captures the request count metric is added.
       .addMiddleware(new ExampleMetricMiddleware()),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

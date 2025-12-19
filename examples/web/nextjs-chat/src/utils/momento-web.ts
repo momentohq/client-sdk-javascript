@@ -53,7 +53,7 @@ async function getNewWebClients(): Promise<MomentoClients> {
   const token = await fetchResp.text();
   const topicClient = new TopicClient({
     configuration: Configurations.Browser.v1(),
-    credentialProvider: CredentialProvider.fromString({
+    credentialProvider: CredentialProvider.fromDisposableToken({
       apiKey: token,
     }),
   });

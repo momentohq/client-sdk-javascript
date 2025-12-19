@@ -1,7 +1,6 @@
 import {
   CacheClient,
   Configurations,
-  EnvMomentoTokenProvider,
   DefaultMomentoLoggerFactory,
   DefaultMomentoLoggerLevel,
   MomentoLoggerFactory,
@@ -15,9 +14,6 @@ export function getCacheClient(
 ) {
   return new CacheClient({
     configuration: Configurations.Laptop.v1(loggerFactory).withClientTimeoutMillis(requestTimeoutMs),
-    credentialProvider: new EnvMomentoTokenProvider({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
     defaultTtlSeconds: cacheItemTtlSeconds,
   });
 }

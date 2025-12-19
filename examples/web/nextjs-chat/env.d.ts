@@ -1,5 +1,5 @@
 namespace NodeJS {
-    interface ProcessEnv {
-        MOMENTO_API_KEY: string;
-    }
+  interface ProcessEnv {
+    V1_API_KEY: string;
+  }
 }

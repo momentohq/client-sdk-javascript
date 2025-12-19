@@ -6,10 +6,11 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "build": "tsc",
+    "cheat-sheet": "tsc && node dist/doc-example-files/cheat-sheet-main.js",
     "topic-subscribe": "tsc && node dist/topic-subscribe.js",
     "topic-publish": "tsc && node dist/topic-publish.js",
     "topic-refresh-token": "tsc && node dist/topic-refresh-token.js",
-    "validate-examples": "echo 'Topic examples are intended to be run interactively, so, skipping execution for CI.'",
+    "validate-examples": "tsc && node dist/doc-example-files/cheat-sheet-main.js",
     "test": "jest",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix"

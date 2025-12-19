@@ -6,7 +6,6 @@ async function main() {
   initJSDom();
   const cacheClient = new CacheClient({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

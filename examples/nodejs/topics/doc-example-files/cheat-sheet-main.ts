@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {TopicClient, TopicConfigurations, CredentialProvider} from '@gomomento/sdk';
+import {TopicClient, TopicConfigurations} from '@gomomento/sdk';
 
 function main() {
-  const cacheClient = new TopicClient({
+  const topicClient = new TopicClient({
     configuration: TopicConfigurations.Default.latest(),
   });
 }
