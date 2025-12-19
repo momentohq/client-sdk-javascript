@@ -5,7 +5,6 @@ import {
   CompressionLevel,
   Configurations,
   CreateCacheResponse,
-  CredentialProvider,
 } from '@gomomento/sdk';
 import {CompressorFactory} from '@gomomento/sdk-nodejs-compression-zstd';
 
@@ -22,7 +21,6 @@ async function main() {
 
   const cacheClient = new CacheClient({
     configuration: configuration,
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

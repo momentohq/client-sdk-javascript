@@ -1,7 +1,6 @@
 import {
   CacheClient,
   Configurations,
-  EnvMomentoTokenProvider,
   MomentoLogger,
   MomentoLoggerFactory,
   CreateCacheResponse,
@@ -24,9 +23,6 @@ export function getCacheClient(
   }
   return CacheClient.create({
     configuration: config,
-    credentialProvider: new EnvMomentoTokenProvider({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
     defaultTtlSeconds: cacheItemTtlSeconds,
   });
 }
