@@ -17,7 +17,7 @@ import {
   Configurations,
   CredentialProvider,
 } from '@gomomento/sdk';
-import { CompressorFactory } from '@gomomento/sdk-nodejs-compression';
+import {CompressorFactory} from '@gomomento/sdk-nodejs-compression';
 import * as crypto from 'node:crypto';
 
 function example_API_ConfigurationWithCompression() {
@@ -36,7 +36,7 @@ function example_API_ConfigurationWithCompressionNoAutomatic() {
 }
 
 async function example_API_SetWithCompression(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.set(cacheName, 'test-key', 'test-value', { compress: true });
+  const result = await cacheClient.set(cacheName, 'test-key', 'test-value', {compress: true});
   switch (result.type) {
     case CacheSetResponse.Success:
       console.log("Key 'test-key' stored successfully");
@@ -49,7 +49,7 @@ async function example_API_SetWithCompression(cacheClient: CacheClient, cacheNam
 }
 
 async function example_API_GetExplicitDecompress(cacheClient: CacheClient, cacheName: string) {
-  const result = await cacheClient.get(cacheName, 'test-key', { decompress: true });
+  const result = await cacheClient.get(cacheName, 'test-key', {decompress: true});
   switch (result.type) {
     case CacheGetResponse.Miss:
       console.log(`Key 'test-key' was not found in cache '${cacheName}'`);
