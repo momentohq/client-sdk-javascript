@@ -11,6 +11,7 @@ import {
   LeaderboardLengthResponse,
   LeaderboardRemoveElementsResponse,
   LeaderboardDeleteResponse,
+  CredentialProvider,
 } from '@gomomento/sdk';
 
 async function main() {
@@ -34,7 +35,9 @@ async function main() {
       throw createCacheResponse.innerException();
   }
 
-  const client = new PreviewLeaderboardClient({});
+  const client = new PreviewLeaderboardClient({
+    credentialProvider: CredentialProvider.fromEnvVar('V1_API_KEY'),
+  });
 
   // Create a leaderboard with given cache and leaderboard names
   const leaderboard = client.leaderboard('my-cache', 'my-leaderboard');
