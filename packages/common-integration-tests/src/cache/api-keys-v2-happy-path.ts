@@ -1813,8 +1813,8 @@ export function runCacheTestWithApiKeyV2(
 
       it('sortedSetUnionStore should store all distinct elements from the source sets', async () => {
         const sourceSets: SortedSetSource[] = [
-          {sortedSetName: 'set1', weight: 1.0},
-          {sortedSetName: 'set2', weight: 2.5},
+          {sortedSetName: v4(), weight: 1.0},
+          {sortedSetName: v4(), weight: 2.5},
         ];
         const field1 = 'foo';
         const field2 = 'bar';
