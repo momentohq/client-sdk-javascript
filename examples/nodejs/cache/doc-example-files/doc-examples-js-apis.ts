@@ -139,7 +139,7 @@ function example_API_CredentialProviderFromEnvVarV2() {
 function example_API_CredentialProviderFromApiKeyV2() {
   const apiKey = retrieveApiKeyV2FromYourSecretsManager();
   // using the us-west-2 region's endpoint for this example
-  const endpoint = 'cache.cell-4-us-west-2-1.prod.a.momentohq.com';
+  const endpoint = 'cell-4-us-west-2-1.prod.a.momentohq.com';
   CredentialProvider.fromApiKeyV2({apiKey: apiKey, endpoint: endpoint});
 }
 
