@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import {Construct} from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
