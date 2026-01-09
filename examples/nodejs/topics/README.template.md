@@ -10,6 +10,7 @@ _Read this in other languages_: [日本語](README.ja.md)
 
 - Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 This directory contains a project that illustrates how to use Momento topics (aka PubSub).
 
@@ -26,13 +27,13 @@ This example demonstrates how to subscribe to a topic and publish values to it.
 In one terminal, subscribe to a topic on a cache:
 
 ```bash
-MOMENTO_API_KEY=<YOUR API KEY> npm run topic-subscribe <cache-name> <topic-name>
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run topic-subscribe <cache-name> <topic-name>
 ```
 
 Then in another terminal, publish a value to the topic:
 
 ```bash
-MOMENTO_API_KEY=<YOUR API KEY> npm run topic-publish <cache-name> <topic-name> <value>
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run topic-publish <cache-name> <topic-name> <value>
 ```
 
 Note that you do not need to create the cache before running the examples; the examples take care of that. Also note the service creates a topic automatically.
@@ -41,9 +42,9 @@ As an example:
 
 ```bash
 # in the first terminal
-MOMENTO_API_KEY=<YOUR API KEY> npm run topic-subscribe my-cache dogs
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run topic-subscribe my-cache dogs
 # in another terminal
-MOMENTO_API_KEY=<YOUR API KEY> npm run topic-publish my-cache dogs poodle
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run topic-publish my-cache dogs poodle
 # "poodle" should soon appear on the first terminal
 ```
 

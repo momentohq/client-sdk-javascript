@@ -1,5 +1,5 @@
-import {GetSecretValueCommand, SecretsManagerClient} from '@aws-sdk/client-secrets-manager';
-import {CacheClient, CacheGetResponse, Configurations, CredentialProvider} from '@gomomento/sdk';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { CacheClient, CacheGetResponse, Configurations, CredentialProvider } from '@gomomento/sdk';
 
 const CACHE_NAME = 'cache';
 const KEY = 'key';
@@ -52,13 +52,19 @@ async function getCacheClient(): Promise<CacheClient> {
   if (apiKeySecretName === undefined) {
     throw new Error("Missing required env var 'MOMENTO_API_KEY_SECRET_NAME");
   }
+  const endpointSecretName = process.env.MOMENTO_ENDPOINT_SECRET_NAME;
+  if (endpointSecretName === undefined) {
+    throw new Error("Missing required env var 'MOMENTO_ENDPOINT_SECRET_NAME");
+  }
+
   if (_cacheClient === undefined) {
     const momentoApiKey = await getSecret(apiKeySecretName);
+    const endpoint = await getSecret(endpointSecretName);
     console.log('Retrieved secret!');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
     _cacheClient = await CacheClient.create({
       configuration: Configurations.Lambda.latest(),
-      credentialProvider: CredentialProvider.fromString({apiKey: momentoApiKey}),
+      credentialProvider: CredentialProvider.fromApiKeyV2({ apiKey: momentoApiKey, endpoint: endpoint }),
       defaultTtlSeconds: 60,
     });
   }
@@ -67,7 +73,7 @@ async function getCacheClient(): Promise<CacheClient> {
 
 async function getSecret(secretName: string): Promise<string> {
   if (!_cachedSecrets.has(secretName)) {
-    const secretResponse = await _secretsClient.send(new GetSecretValueCommand({SecretId: secretName}));
+    const secretResponse = await _secretsClient.send(new GetSecretValueCommand({ SecretId: secretName }));
     if (secretResponse) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       _cachedSecrets.set(secretName, secretResponse.SecretString!);

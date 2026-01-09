@@ -107,7 +107,7 @@ import {
   CacheSetIfPresentAndHashEqualResponse,
 } from '@gomomento/sdk';
 import * as crypto from 'crypto';
-import {TextEncoder} from 'util';
+import { TextEncoder } from 'util';
 
 function retrieveApiKeyFromYourSecretsManager(): string {
   // this is not a valid API key but conforms to the syntax requirements.
@@ -126,31 +126,31 @@ function example_API_CredentialProviderFromEnvVar() {
 }
 
 function example_API_CredentialProviderFromEnvVarV2() {
-  // By default, reads from MOMENTO_API_KEY and MOMENTO_ENDPOINT env vars
-  CredentialProvider.fromEnvVarV2();
-
-  // To provide custom env var names:
   CredentialProvider.fromEnvVarV2({
-    apiKeyEnvVar: 'ALT_MOMENTO_API_KEY',
-    endpointEnvVar: 'ALT_MOMENTO_ENDPOINT',
+    apiKeyEnvVar: 'MOMENTO_API_KEY',
+    endpointEnvVar: 'MOMENTO_ENDPOINT',
   });
+}
+
+function example_API_CredentialProviderFromEnvVarV2Default() {
+  CredentialProvider.fromEnvVarV2();
 }
 
 function example_API_CredentialProviderFromApiKeyV2() {
   const apiKey = retrieveApiKeyV2FromYourSecretsManager();
   // using the us-west-2 region's endpoint for this example
   const endpoint = 'cell-4-us-west-2-1.prod.a.momentohq.com';
-  CredentialProvider.fromApiKeyV2({apiKey: apiKey, endpoint: endpoint});
+  CredentialProvider.fromApiKeyV2({ apiKey: apiKey, endpoint: endpoint });
 }
 
 function example_API_CredentialProviderFromDisposableToken() {
   const apiKey = retrieveApiKeyFromYourSecretsManager();
-  CredentialProvider.fromDisposableToken({apiKey: apiKey});
+  CredentialProvider.fromDisposableToken({ apiKey: apiKey });
 }
 
 function example_API_CredentialProviderFromString() {
   const apiKey = retrieveApiKeyFromYourSecretsManager();
-  CredentialProvider.fromString({apiKey: apiKey});
+  CredentialProvider.fromString({ apiKey: apiKey });
 }
 
 function example_API_ConfigurationLaptop() {
@@ -791,7 +791,7 @@ async function example_API_ListRemoveValue(cacheClient: CacheClient, cacheName: 
 
 async function example_API_ListRetain(cacheClient: CacheClient, cacheName: string) {
   await cacheClient.listConcatenateFront(cacheName, 'test-list', ['a', 'b', 'c', 'd', 'e', 'f']);
-  const result = await cacheClient.listRetain(cacheName, 'test-list', {startIndex: 1, endIndex: 4});
+  const result = await cacheClient.listRetain(cacheName, 'test-list', { startIndex: 1, endIndex: 4 });
   switch (result.type) {
     case CacheListRetainResponse.Success:
       console.log("Retaining elements from index 1 to 4 from list 'test-list'");
@@ -1309,8 +1309,8 @@ async function example_API_SortedSetRemoveElements(cacheClient: CacheClient, cac
 
 async function example_API_SortedSetUnionStore(cacheClient: CacheClient, cacheName: string) {
   const sources: SortedSetSource[] = [
-    {sortedSetName: 'test-sorted-set', weight: 1},
-    {sortedSetName: 'test-sorted-set-2', weight: -1},
+    { sortedSetName: 'test-sorted-set', weight: 1 },
+    { sortedSetName: 'test-sorted-set-2', weight: -1 },
   ];
   const result = await cacheClient.sortedSetUnionStore(cacheName, 'dest-sorted-set', sources);
   switch (result.type) {
@@ -1422,7 +1422,7 @@ async function example_API_GenerateApiKey(authClient: AuthClient) {
 
   // Generate a token that can call publish and subscribe on all topics within cache bar
   const singleCacheAllTopicsRWTokenResponse = await authClient.generateApiKey(
-    TokenScopes.topicPublishSubscribe({name: 'bar'}, AllTopics),
+    TokenScopes.topicPublishSubscribe({ name: 'bar' }, AllTopics),
     ExpiresIn.minutes(30)
   );
   switch (singleCacheAllTopicsRWTokenResponse.type) {
@@ -1515,7 +1515,7 @@ async function example_API_RefreshApiKey(authClient: AuthClient) {
 
   console.log('Generated API key; refreshing!');
   const refreshAuthClient = new AuthClient({
-    credentialProvider: CredentialProvider.fromString({apiKey: successResponse.apiKey}),
+    credentialProvider: CredentialProvider.fromString({ apiKey: successResponse.apiKey }),
   });
   const refreshTokenResponse = await refreshAuthClient.refreshApiKey(successResponse.refreshToken);
   switch (refreshTokenResponse.type) {
@@ -1733,7 +1733,7 @@ async function example_API_LeaderboardUpsertPagination(leaderboard: ILeaderboard
   // in batches of up to 8192 elements at a time.
   // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
   const elements = [...Array(totalNumElements).keys()].map(i => {
-    return {id: i + 1, score: i * Math.random()};
+    return { id: i + 1, score: i * Math.random() };
   });
   for (let i = 0; i < totalNumElements; i += 8192) {
     // Create a Map containing 8192 elements at a time
@@ -1806,7 +1806,7 @@ async function example_API_LeaderboardFetchByScorePagination(leaderboard: ILeade
   // has more than 8192 elements.
   // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
   for (let offset = 0; offset < totalNumElements; offset += 8192) {
-    const result = await leaderboard.fetchByScore({offset});
+    const result = await leaderboard.fetchByScore({ offset });
     switch (result.type) {
       case LeaderboardFetchResponse.Success:
         processBatch(result.values());
@@ -1842,7 +1842,7 @@ async function example_API_LeaderboardFetchByRankPagination(leaderboard: ILeader
   // if your leaderboard has more than 8192 elements
   // This example shows how to paginate for a large value of `totalNumElements`, such as `20000`.
   for (let rank = 0; rank < totalNumElements; rank += 8192) {
-    const result = await leaderboard.fetchByRank(rank, rank + 8192, {order: LeaderboardOrder.Descending});
+    const result = await leaderboard.fetchByRank(rank, rank + 8192, { order: LeaderboardOrder.Descending });
     switch (result.type) {
       case LeaderboardFetchResponse.Success:
         processBatch(result.values());
@@ -1936,9 +1936,8 @@ async function main() {
   example_API_CredentialProviderFromEnvVar();
 
   process.env['MOMENTO_API_KEY'] = retrieveApiKeyV2FromYourSecretsManager();
-  process.env['ALT_MOMENTO_API_KEY'] = retrieveApiKeyV2FromYourSecretsManager();
-  process.env['ALT_MOMENTO_ENDPOINT'] = process.env['MOMENTO_ENDPOINT'];
   example_API_CredentialProviderFromEnvVarV2();
+  example_API_CredentialProviderFromEnvVarV2Default();
 
   process.env['MOMENTO_API_KEY'] = originalApiKey;
   example_API_CredentialProviderFromApiKeyV2();

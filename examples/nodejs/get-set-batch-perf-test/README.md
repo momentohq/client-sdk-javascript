@@ -20,6 +20,7 @@ improve throughput for workloads that it is suitable for.
 
 - Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -31,7 +32,7 @@ npm install
 
 ```bash
 # Run example load generator
-MOMENTO_API_KEY=<YOUR API KEY> npm run start-test
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run start-test
 ```
 
 You can check out the example code in [perf-test.ts](get-set-batch-perf-test.ts). The configurable
