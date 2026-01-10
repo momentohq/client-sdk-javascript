@@ -14,6 +14,7 @@ The primary use is to provide a base for testing Momento performance in a lambda
 
 - Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 ## Deploying the Simple Get Lambda
 
@@ -39,7 +40,7 @@ You will also need a superuser API key generated from the [Momento Console](http
 Then run:
 
 ```bash
-npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
+npm run cdk -- deploy --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY> --parameters MomentoEndpoint=<YOUR_MOMENTO_ENDPOINT>
 ```
 
 The lambda does not set up a way to access itself externally, so to run it, you will have to go to MomentoSimpleGet in AWS Lambda and run a test.
