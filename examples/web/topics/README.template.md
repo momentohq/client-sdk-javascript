@@ -10,6 +10,7 @@ _Read this in other languages_: [日本語](README.ja.md)
 
 - Node version 16 or higher is required
 - A Momento API key is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -21,7 +22,7 @@ npm install
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run example
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run example
 ```
 
 Example Code: [basic.ts](basic.ts)

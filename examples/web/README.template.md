@@ -6,6 +6,7 @@
 
 - Node version 16 or higher is required
 - A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com)
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 ## Examples
 

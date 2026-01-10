@@ -9,7 +9,7 @@ The primary use for the Token Vending Machine is to provide temporary, restricte
 ## Prerequisites
 
 - Node version 16 or higher is required
-- To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
+- To get started with Momento you will need a Momento v1 API key. You can get one from the [Momento Console](https://console.gomomento.com). Check out the [getting started](https://docs.momentohq.com/getting-started) guide for more information on obtaining an API key.
 
 ## Configuring the Token Vending Machine App
 
@@ -36,7 +36,7 @@ You will also need a superuser API key generated from the [Momento Console](http
 Then run:
 
 ```bash
-npm run deploy -- --parameters MomentoApiKey=<YOUR_MOMENTO_API_KEY>
+npm run deploy -- --parameters MomentoApiKey=<YOUR_V1_MOMENTO_API_KEY>
 ```
 
 **Note**: If you are logged into Amazon's public ECR while deploying, you may run into a `403 Forbidden` error. To resolve this, you can run `docker logout public.ecr.aws`.

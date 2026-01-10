@@ -126,14 +126,14 @@ function example_API_CredentialProviderFromEnvVar() {
 }
 
 function example_API_CredentialProviderFromEnvVarV2() {
-  // By default, reads from MOMENTO_API_KEY and MOMENTO_ENDPOINT env vars
-  CredentialProvider.fromEnvVarV2();
-
-  // To provide custom env var names:
   CredentialProvider.fromEnvVarV2({
-    apiKeyEnvVar: 'ALT_MOMENTO_API_KEY',
-    endpointEnvVar: 'ALT_MOMENTO_ENDPOINT',
+    apiKeyEnvVar: 'MOMENTO_API_KEY',
+    endpointEnvVar: 'MOMENTO_ENDPOINT',
   });
+}
+
+function example_API_CredentialProviderFromEnvVarV2Default() {
+  CredentialProvider.fromEnvVarV2();
 }
 
 function example_API_CredentialProviderFromApiKeyV2() {
@@ -1936,9 +1936,8 @@ async function main() {
   example_API_CredentialProviderFromEnvVar();
 
   process.env['MOMENTO_API_KEY'] = retrieveApiKeyV2FromYourSecretsManager();
-  process.env['ALT_MOMENTO_API_KEY'] = retrieveApiKeyV2FromYourSecretsManager();
-  process.env['ALT_MOMENTO_ENDPOINT'] = process.env['MOMENTO_ENDPOINT'];
   example_API_CredentialProviderFromEnvVarV2();
+  example_API_CredentialProviderFromEnvVarV2Default();
 
   process.env['MOMENTO_API_KEY'] = originalApiKey;
   example_API_CredentialProviderFromApiKeyV2();
