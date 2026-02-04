@@ -171,12 +171,6 @@ export function validateDisposableTokenExpiry(expiresIn: ExpiresIn) {
   if (expiresIn.seconds() < 0) {
     throw new InvalidArgumentError('disposable token expiry must be positive');
   }
-  if (expiresIn.seconds() > 60 * 60) {
-    // 60 seconds * 60 minutes
-    throw new InvalidArgumentError(
-      'disposable tokens must expire within 1 hour'
-    );
-  }
 }
 
 export function validateDisposableTokenTokenID(tokenId: string) {
