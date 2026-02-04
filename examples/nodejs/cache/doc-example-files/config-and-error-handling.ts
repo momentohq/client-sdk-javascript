@@ -20,7 +20,7 @@ import {
 /* eslint-disable @typescript-eslint/no-unused-vars */
 async function example_configuration_ConstructWithNoConfig() {
   const cacheClient = await CacheClient.create({
-    credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 }
@@ -30,7 +30,7 @@ async function example_configuration_ConstructWithNoConfig() {
 async function example_configuration_ConstructWithLambdaConfig() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Lambda.latest(),
-    credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 }
@@ -56,7 +56,7 @@ async function example_configuration_ErrorHandlingHitMiss(cacheClient: CacheClie
 async function example_configuration_ConstructWithThrowOnErrorsConfig() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Lambda.latest().withThrowOnErrors(true),
-    credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 }
@@ -94,7 +94,7 @@ async function example_configuration_ErrorHandlingExceptionErrorCode(cacheClient
 async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
   await cacheClient.createCache('test-cache');
@@ -107,7 +107,7 @@ async function main() {
 
   const cacheClientWithThrowOnErrors = await CacheClient.create({
     configuration: Configurations.Lambda.latest().withThrowOnErrors(true),
-    credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 

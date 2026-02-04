@@ -131,7 +131,7 @@ async function main() {
   const cacheName = 'cache';
   const shardedDictionaryName = 'myShardedDictionary';
 
-  const credentialsProvider = CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
+  const credentialsProvider = CredentialProvider.fromEnvVarV2();
   const loggerFactory: MomentoLoggerFactory = new DefaultMomentoLoggerFactory(DefaultMomentoLoggerLevel.INFO);
   const logger = loggerFactory.getLogger('shardedDictionaryExample');
 

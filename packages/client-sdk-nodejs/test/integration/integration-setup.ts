@@ -139,10 +139,18 @@ export class TestAdminClient {
 let _credsProvider: CredentialProvider | undefined = undefined;
 export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
-    _credsProvider =
-      CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
+    _credsProvider = CredentialProvider.fromEnvironmentVariable('V1_API_KEY');
   }
   return _credsProvider;
+}
+
+let _credsProviderV2: CredentialProvider | undefined = undefined;
+export function credsProviderV2(): CredentialProvider {
+  if (_credsProviderV2 === undefined) {
+    // Looks for MOMENTO_API_KEY and MOMENTO_ENDPOINT environment variables
+    _credsProviderV2 = CredentialProvider.fromEnvVarV2();
+  }
+  return _credsProviderV2;
 }
 
 let _mgaAccountSessionTokenCredsProvider: CredentialProvider | undefined =
@@ -174,8 +182,10 @@ function useConsistentReads(): boolean {
   return process.argv.find(arg => arg === 'useConsistentReads') !== undefined;
 }
 
-export function integrationTestCacheClientProps(): CacheClientAllProps {
-  let credentialProvider = credsProvider();
+export function integrationTestCacheClientProps(
+  apiKeyV2 = false
+): CacheClientAllProps {
+  let credentialProvider = apiKeyV2 ? credsProviderV2() : credsProvider();
   if (testAgainstMomentoLocal()) {
     credentialProvider = new MomentoLocalProvider();
   }
@@ -193,8 +203,10 @@ export function integrationTestCacheClientProps(): CacheClientAllProps {
   };
 }
 
-export function integrationTestTopicClientProps(): TopicClientAllProps {
-  let credentialProvider = credsProvider();
+export function integrationTestTopicClientProps(
+  apiKeyV2 = false
+): TopicClientAllProps {
+  let credentialProvider = apiKeyV2 ? credsProviderV2() : credsProvider();
   if (testAgainstMomentoLocal()) {
     credentialProvider = new MomentoLocalProvider();
   }
@@ -206,8 +218,8 @@ export function integrationTestTopicClientProps(): TopicClientAllProps {
   };
 }
 
-function momentoClientForTesting(): CacheClient {
-  return new CacheClient(integrationTestCacheClientProps());
+function momentoClientForTesting(apiKeyV2 = false): CacheClient {
+  return new CacheClient(integrationTestCacheClientProps(apiKeyV2));
 }
 
 function momentoClientForTestingWithThrowOnErrors(): CacheClient {
@@ -249,11 +261,8 @@ function momentoClientForTestingWithoutRetryStrategy(): CacheClient {
   return new CacheClient(props);
 }
 
-function momentoTopicClientForTesting(): TopicClient {
-  return new TopicClient({
-    configuration: integrationTestTopicClientProps().configuration,
-    credentialProvider: integrationTestTopicClientProps().credentialProvider,
-  });
+function momentoTopicClientForTesting(apiKeyV2 = false): TopicClient {
+  return new TopicClient(integrationTestTopicClientProps(apiKeyV2));
 }
 
 function momentoTopicClientWithThrowOnErrorsForTesting(): TopicClient {
@@ -271,9 +280,11 @@ function momentoTopicClientForTestingWithMgaAccountSessionToken(): TopicClient {
   });
 }
 
-function momentoLeaderboardClientForTesting(): PreviewLeaderboardClient {
+function momentoLeaderboardClientForTesting(
+  apiKeyV2 = false
+): PreviewLeaderboardClient {
   return new PreviewLeaderboardClient({
-    credentialProvider: credsProvider(),
+    credentialProvider: apiKeyV2 ? credsProviderV2() : credsProvider(),
     configuration: LeaderboardConfigurations.Laptop.latest(),
   });
 }
@@ -292,8 +303,10 @@ export function SetupIntegrationTest(): {
   cacheClientWithBalancedReadConcern: CacheClient;
   cacheClientWithConsistentReadConcern: CacheClient;
   cacheClientWithoutRetryStrategy: CacheClient;
+  cacheClientApiKeyV2: CacheClient;
   integrationTestCacheName: string;
   credentialProvider: CredentialProvider;
+  credentialProviderApiKeyV2: CredentialProvider;
 } {
   const cacheName = testCacheName();
 
@@ -324,29 +337,35 @@ export function SetupIntegrationTest(): {
     momentoClientForTestingConsistentReadConcern();
   const clientWithoutRetryStrategy =
     momentoClientForTestingWithoutRetryStrategy();
+  const cacheClientApiKeyV2 = momentoClientForTesting(true);
   return {
     cacheClient: client,
     cacheClientWithThrowOnErrors: clientWithThrowOnErrors,
     cacheClientWithBalancedReadConcern: clientWithBalancedReadConcern,
     cacheClientWithConsistentReadConcern: clientWithConsistentReadConcern,
     cacheClientWithoutRetryStrategy: clientWithoutRetryStrategy,
+    cacheClientApiKeyV2,
     integrationTestCacheName: cacheName,
     credentialProvider: credsProvider(),
+    credentialProviderApiKeyV2: credsProviderV2(),
   };
 }
 
 export function SetupTopicIntegrationTest(): {
   topicClient: TopicClient;
+  topicClientApiKeyV2: TopicClient;
   topicClientWithThrowOnErrors: TopicClient;
   cacheClient: CacheClient;
   integrationTestCacheName: string;
 } {
   const {cacheClient, integrationTestCacheName} = SetupIntegrationTest();
   const topicClient = momentoTopicClientForTesting();
+  const topicClientApiKeyV2 = momentoTopicClientForTesting(true);
   const topicClientWithThrowOnErrors =
     momentoTopicClientWithThrowOnErrorsForTesting();
   return {
     topicClient,
+    topicClientApiKeyV2,
     topicClientWithThrowOnErrors,
     cacheClient: cacheClient,
     integrationTestCacheName: integrationTestCacheName,
@@ -355,6 +374,7 @@ export function SetupTopicIntegrationTest(): {
 
 export function SetupLeaderboardIntegrationTest(): {
   leaderboardClient: PreviewLeaderboardClient;
+  leaderboardClientApiKeyV2: PreviewLeaderboardClient;
   leaderboardClientWithThrowOnErrors: PreviewLeaderboardClient;
   integrationTestCacheName: string;
 } {
@@ -362,8 +382,10 @@ export function SetupLeaderboardIntegrationTest(): {
   const leaderboardClient = momentoLeaderboardClientForTesting();
   const leaderboardClientWithThrowOnErrors =
     momentoLeaderboardClientWithThrowOnErrorsForTesting();
+  const leaderboardClientApiKeyV2 = momentoLeaderboardClientForTesting(true);
   return {
     leaderboardClient,
+    leaderboardClientApiKeyV2,
     leaderboardClientWithThrowOnErrors,
     integrationTestCacheName: integrationTestCacheName,
   };

@@ -1,6 +1,5 @@
 import {
   PreviewLeaderboardClient,
-  LeaderboardConfigurations,
   CacheClient,
   Configurations,
   LeaderboardOrder,
@@ -35,7 +34,7 @@ async function main() {
       throw createCacheResponse.innerException();
   }
 
-  const client = new PreviewLeaderboardClient({});
+  const client = new PreviewLeaderboardClient();
 
   // Create a leaderboard with given cache and leaderboard names
   const leaderboard = client.leaderboard('my-cache', 'my-leaderboard');

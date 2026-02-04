@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@gomomento/sdk": "1.116.0",
-    "@gomomento/sdk-nodejs-compression-zstd": "0.116.0",
+    "@gomomento/sdk": "1.117.1",
+    "@gomomento/sdk-nodejs-compression-zstd": "0.117.1",
     "@mongodb-js/zstd": "2.0.0"
   }
 }

@@ -39,7 +39,7 @@ async function example_patterns_WriteThroughCaching(cacheClient: CacheClient): P
 async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
   await cacheClient.createCache('test-cache');

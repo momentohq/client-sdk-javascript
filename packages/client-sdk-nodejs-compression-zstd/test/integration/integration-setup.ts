@@ -34,8 +34,7 @@ let _credsProvider: CredentialProvider | undefined = undefined;
 
 export function credsProvider(): CredentialProvider {
   if (_credsProvider === undefined) {
-    _credsProvider =
-      CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
+    _credsProvider = CredentialProvider.fromEnvVarV2();
   }
   return _credsProvider;
 }

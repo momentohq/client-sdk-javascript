@@ -10,6 +10,7 @@ _Read this in other languages_: [日本語](README.ja.md)
 
 - Node version 16 or higher is required
 - A Momento API key is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -21,7 +22,7 @@ npm install
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run example
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run example
 ```
 
 Example Code: [basic.ts](basic.ts)
@@ -30,7 +31,7 @@ Example Code: [basic.ts](basic.ts)
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run advanced
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run advanced
 ```
 
 Example Code: [advanced.ts](advanced.ts)
@@ -41,14 +42,14 @@ This example demonstrates how to use the dictionary data type.
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run dictionary
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run dictionary
 ```
 
 Example Code: [dictionary.ts](dictionary.ts)
 
 ## Running the TopicClient example with auto-refreshing disposable tokens
 
-This example implements TokenRefreshingTopicClient, an example wrapper class around the TopicClient that refreshes disposable tokens before they expire. Getting a new disposable token requires creating a new TopicClient that accepts a CredentialProvider that uses the new token. After the new TopicClient is created, existing subscriptions must be transferred to the new client. All of this occurs within the TokenRefreshingTopicClient. 
+This example implements TokenRefreshingTopicClient, an example wrapper class around the TopicClient that refreshes disposable tokens before they expire. Getting a new disposable token requires creating a new TopicClient that accepts a CredentialProvider that uses the new token. After the new TopicClient is created, existing subscriptions must be transferred to the new client. All of this occurs within the TokenRefreshingTopicClient.
 
 If you run the example using the `localTokenVendingMachine()` method passed to the wrapped client (this is the default for this example):
 
@@ -63,7 +64,7 @@ Run the example using:
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run tokens
+V1_API_KEY=<YOUR V1 API KEY> npm run tokens
 ```
 
 If you have deployed a token vending machine to generate disposable tokens like so:

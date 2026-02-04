@@ -42,8 +42,7 @@ describe('MomentoLocalMiddleware', () => {
     // Create CacheClient with middleware enabled
     cacheClient = await CacheClient.create({
       configuration: Configurations.Laptop.v1().withMiddlewares([middleware]),
-      credentialProvider:
-        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+      credentialProvider: CredentialProvider.fromEnvVarV2(),
       defaultTtlSeconds: 60,
     });
   });

@@ -1,4 +1,4 @@
-import {CacheClient, Configurations, CredentialProvider} from '@gomomento/sdk';
+import {CacheClient, Configurations} from '@gomomento/sdk';
 import {PinoMomentoLoggerFactory} from './pino-logger';
 
 function example_observability_CreateCacheClientWithPinoLogger(): CacheClient {
@@ -13,7 +13,6 @@ function example_observability_CreateCacheClientWithPinoLogger(): CacheClient {
         },
       })
     ),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({environmentVariableName: 'MOMENTO_API_KEY'}),
     defaultTtlSeconds: 60,
   });
 }

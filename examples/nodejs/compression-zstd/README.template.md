@@ -10,6 +10,7 @@ This `@gomomento/sdk-nodejs-compression-zstd` library is an alternative to the m
 
 - Node version 16 or higher is required
 - To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 To run any of the examples you will need to install the dependencies once first:
 
@@ -23,7 +24,7 @@ This example demonstrates set and get from a cache, with `zstd` compression.
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> npm run compression
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run compression
 ```
 
 Example Code: [compression.ts](compression.ts)

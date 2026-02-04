@@ -98,13 +98,10 @@ async function generateApiKey(
 }
 
 async function main() {
-  const mainCredsProvider = CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY');
-  const mainAuthClient = new AuthClient({
-    credentialProvider: mainCredsProvider,
-  });
+  // Use the default credential provider when creating clients
+  const mainAuthClient = new AuthClient({});
   const mainCacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: mainCredsProvider,
     defaultTtlSeconds: 60,
   });
 
@@ -124,7 +121,7 @@ async function main() {
     );
     const scopedTokenCacheClient = await CacheClient.create({
       configuration: Configurations.Laptop.v1(),
-      credentialProvider: CredentialProvider.fromString({apiKey: scopedToken}),
+      credentialProvider: CredentialProvider.fromDisposableToken({apiKey: scopedToken}),
       defaultTtlSeconds: 600,
     });
 

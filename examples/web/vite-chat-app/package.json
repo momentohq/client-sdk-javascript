@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "3.378.0",
-    "@gomomento/sdk-web": "1.116.0",
+    "@gomomento/sdk-web": "1.117.1",
     "jwt-decode": "3.1.2",
     "react": "18.2.0",
     "react-dom": "18.2.0"

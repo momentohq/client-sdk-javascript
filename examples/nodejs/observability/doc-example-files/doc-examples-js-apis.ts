@@ -8,19 +8,12 @@
  * a second file in the future if desired.
  *
  */
-import {
-  CacheClient,
-  Configurations,
-  CredentialProvider,
-  DefaultMomentoLoggerFactory,
-  DefaultMomentoLoggerLevel,
-} from '@gomomento/sdk';
+import {CacheClient, Configurations, DefaultMomentoLoggerFactory, DefaultMomentoLoggerLevel} from '@gomomento/sdk';
 import {ExampleMetricMiddleware} from '../example-metric-middleware';
 
 function example_API_InstantiateCacheClientWithMiddleware() {
   new CacheClient({
     configuration: Configurations.Laptop.v1().addMiddleware(new ExampleMetricMiddleware()),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 }

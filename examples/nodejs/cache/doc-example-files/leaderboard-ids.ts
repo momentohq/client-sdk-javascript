@@ -1,6 +1,5 @@
 import {
   PreviewLeaderboardClient,
-  LeaderboardConfigurations,
   CredentialProvider,
   CacheClient,
   Configurations,
@@ -15,9 +14,7 @@ async function main() {
   // 1. Create a CacheClient to connect to Momento
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
     defaultTtlSeconds: 60,
   });
 
@@ -35,12 +32,7 @@ async function main() {
   }
 
   // 3. Create a Leaderboard client
-  const client = new PreviewLeaderboardClient({
-    configuration: LeaderboardConfigurations.Laptop.v1(),
-    credentialProvider: CredentialProvider.fromEnvironmentVariable({
-      environmentVariableName: 'MOMENTO_API_KEY',
-    }),
-  });
+  const client = new PreviewLeaderboardClient();
 
   // 4. Create a leaderboard with given cache and leaderboard names
   const leaderboard = client.leaderboard('my-cache', 'my-leaderboard');

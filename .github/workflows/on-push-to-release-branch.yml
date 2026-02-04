@@ -31,10 +31,6 @@ jobs:
   publish_javascript:
     # The type of runner that the job will run on
     runs-on: ubuntu-24.04
-    env:
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
-      TEST_SESSION_TOKEN: ${{ secrets.MOMENTO_PREPROD_SESSION_TOKEN }}
-      TEST_LEGACY_AUTH_TOKEN: ${{ secrets.ALPHA_LEGACY_TEST_AUTH_TOKEN }}
     needs: release
 
     # Steps represent a sequence of tasks that will be executed as part of the job

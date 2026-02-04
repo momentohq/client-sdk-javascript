@@ -22,7 +22,7 @@ describe('default configurations', () => {
   it('CacheClient should be able to be constructed with a simple string for env var', () => {
     const cacheClientViaConstructor = new CacheClient({
       credentialProvider:
-        CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
+        CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
@@ -30,7 +30,7 @@ describe('default configurations', () => {
 
   it('CacheClient should be able to be constructed with a simple string for env var, using short function name', () => {
     const cacheClientViaConstructor = new CacheClient({
-      credentialProvider: CredentialProvider.fromEnvVar('MOMENTO_API_KEY'),
+      credentialProvider: CredentialProvider.fromEnvVar('V1_API_KEY'),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
@@ -39,6 +39,14 @@ describe('default configurations', () => {
   it('CacheClient should be able to be constructed with a simple string for fromString', () => {
     const cacheClientViaConstructor = new CacheClient({
       credentialProvider: CredentialProvider.fromString(fakeTestV1ApiKey),
+      defaultTtlSeconds: 60,
+    });
+    expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);
+  });
+
+  it('CacheClient should be able to be constructed with default fromEnvVarV2', () => {
+    const cacheClientViaConstructor = new CacheClient({
+      credentialProvider: CredentialProvider.fromEnvVarV2(),
       defaultTtlSeconds: 60,
     });
     expect(cacheClientViaConstructor).toBeInstanceOf(CacheClient);

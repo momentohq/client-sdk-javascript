@@ -1,9 +1,4 @@
-import {
-  CacheClient,
-  Configurations,
-  CreateCacheResponse,
-  CredentialProvider,
-} from '@gomomento/sdk';
+import {CacheClient, Configurations, CreateCacheResponse} from '@gomomento/sdk';
 import {DummyService} from './service';
 import {MomentoRateLimiter} from './momento-rate-limiter';
 import {RateLimiter} from './rate-limiter';
@@ -12,8 +7,6 @@ import {Metrics} from './metrics';
 async function main() {
   const momento = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider:
-      CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 6000,
   });
 

@@ -20,6 +20,17 @@ export class SimpleGetStack extends cdk.Stack {
       secretStringValue: new cdk.SecretValue(momentoApiKeyParam.valueAsString),
     });
 
+    const endpointParam = new cdk.CfnParameter(this, 'MomentoEndpoint', {
+      type: 'String',
+      description: 'The Momento endpoint to connect to.',
+      noEcho: true,
+    });
+
+    const endpointSecret = new secrets.Secret(this, 'MomentoSimpleGetEndpoint', {
+      secretName: 'MomentoSimpleGetEndpoint',
+      secretStringValue: new cdk.SecretValue(endpointParam.valueAsString),
+    });
+
     const getLambda = new lambdaNodejs.NodejsFunction(this, 'MomentoSimpleGet', {
       functionName: 'MomentoSimpleGet',
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -31,9 +42,11 @@ export class SimpleGetStack extends cdk.Stack {
       memorySize: 128,
       environment: {
         MOMENTO_API_KEY_SECRET_NAME: apiKeySecret.secretName,
+        MOMENTO_ENDPOINT_SECRET_NAME: endpointSecret.secretName,
       },
     });
 
     apiKeySecret.grantRead(getLambda);
+    endpointSecret.grantRead(getLambda);
   }
 }

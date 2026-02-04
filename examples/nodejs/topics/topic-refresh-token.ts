@@ -54,7 +54,7 @@ export class TopicRefreshToken {
   private async initialize() {
     const disposableToken = await this.getDisposableToken();
     this.topicClient = new TopicClient({
-      credentialProvider: CredentialProvider.fromString(disposableToken.token),
+      credentialProvider: CredentialProvider.fromDisposableToken(disposableToken.token),
     });
     this.scheduleTokenRefresh(disposableToken.expiresAt);
   }
@@ -80,7 +80,7 @@ export class TopicRefreshToken {
     console.log('Disposable token expiring soon, refreshing topic client with new token');
     const disposableToken = await this.getDisposableToken();
     const newTopicClient = new TopicClient({
-      credentialProvider: CredentialProvider.fromString(disposableToken.token),
+      credentialProvider: CredentialProvider.fromDisposableToken(disposableToken.token),
     });
 
     // Refresh subscriptions with new token
@@ -188,7 +188,9 @@ function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number 
 
 // Helper function to get a disposable token from the auth service
 async function getDisposableToken(): Promise<{token: string; expiresAt: ExpiresAt}> {
-  const authClient = new AuthClient();
+  const authClient = new AuthClient({
+    credentialProvider: CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
+  });
   const fetchResp = await authClient.generateDisposableToken(
     DisposableTokenScopes.topicPublishSubscribe(AllCaches, AllTopics),
     ExpiresIn.minutes(1)

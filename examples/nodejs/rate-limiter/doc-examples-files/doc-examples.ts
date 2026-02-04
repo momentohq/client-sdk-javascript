@@ -4,7 +4,6 @@ import {
   CacheUpdateTtlResponse,
   Configurations,
   CreateCacheResponse,
-  CredentialProvider,
 } from '@gomomento/sdk';
 
 // since our rate limiting buckets are per minute, we expire keys every minute
@@ -79,8 +78,6 @@ export class MomentoRateLimiter {
 async function main() {
   const cacheClient = await CacheClient.create({
     configuration: Configurations.Laptop.v1(),
-    credentialProvider:
-      CredentialProvider.fromEnvironmentVariable('MOMENTO_API_KEY'),
     defaultTtlSeconds: 60,
   });
 

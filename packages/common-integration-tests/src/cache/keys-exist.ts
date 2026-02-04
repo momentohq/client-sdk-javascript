@@ -3,16 +3,10 @@ import {
   ValidateCacheProps,
   ItBehavesLikeItValidatesCacheName,
   expectWithMessage,
+  zipToRecord,
 } from '../common-int-test-utils';
 import {ICacheClient} from '@gomomento/sdk-core/dist/src/internal/clients/cache';
 import {CacheKeyExists, CacheKeysExist} from '@gomomento/sdk-core';
-
-function zipToRecord<V>(keys: string[], values: V[]): Record<string, V> {
-  return keys.reduce<Record<string, V>>((acc, key, index) => {
-    acc[key] = values[index];
-    return acc;
-  }, {} as Record<string, V>);
-}
 
 export function runKeysExistTest(
   cacheClient: ICacheClient,
