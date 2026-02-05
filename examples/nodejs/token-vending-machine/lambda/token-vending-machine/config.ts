@@ -1,4 +1,4 @@
-import {ExpiresIn, AllTopics, CacheRole, TopicRole, DisposableTokenScope} from '@gomomento/sdk';
+import { ExpiresIn, AllTopics, CacheRole, TopicRole, DisposableTokenScope } from '@gomomento/sdk';
 
 /**
  * First, set the scope of permissions for your tokens.
@@ -57,7 +57,7 @@ export const tokenPermissions: DisposableTokenScope = {
  * Second, set the TTL for your tokens in terms of seconds, minutes, hours,
  * days, or using epoch format.
  * This example app generates disposable tokens by default and disposable
- * tokens must expire within 1 hour.
+ * tokens must expire within 25 hours.
  * More information here: https://docs.momentohq.com/develop/api-reference/auth-tokens#generatedisposabletoken-api
  */
 export const tokenExpiresIn: ExpiresIn = ExpiresIn.hours(1);
