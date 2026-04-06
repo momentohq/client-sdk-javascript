@@ -64,7 +64,7 @@ Run the example using:
 
 ```bash
 # Run example code
-MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT<YOUR ENDPOINT> npm run tokens
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<YOUR ENDPOINT> npm run tokens
 ```
 
 If you have deployed a token vending machine to generate disposable tokens like so:
