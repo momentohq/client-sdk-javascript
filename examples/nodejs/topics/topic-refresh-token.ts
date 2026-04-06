@@ -17,7 +17,7 @@ import {
 
 export interface TokenRefreshingTopicClientProps {
   refreshBeforeExpiryMs: number;
-  getDisposableToken: () => Promise<{ token: string; expiresAt: ExpiresAt }>;
+  getDisposableToken: () => Promise<{token: string; expiresAt: ExpiresAt}>;
 }
 
 // This wrapper class makes it easy to use disposable auth tokens with the TopicClient.
@@ -28,7 +28,7 @@ export interface TokenRefreshingTopicClientProps {
 export class TopicRefreshToken {
   private topicClient?: TopicClient;
   private readonly refreshBeforeExpiryMs: number;
-  private readonly getDisposableToken: () => Promise<{ token: string; expiresAt: ExpiresAt }>;
+  private readonly getDisposableToken: () => Promise<{token: string; expiresAt: ExpiresAt}>;
   private activeSubscriptions: Record<
     string,
     {
@@ -128,7 +128,7 @@ export class TopicRefreshToken {
   async subscribe(
     cacheName: string,
     topicName: string,
-    options: { onItem: (item: TopicItem) => void; onError: (error: TopicSubscribe.Error) => void }
+    options: {onItem: (item: TopicItem) => void; onError: (error: TopicSubscribe.Error) => void}
   ) {
     if (!this.topicClient) {
       await this.initialize();
@@ -187,7 +187,7 @@ function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number 
 }
 
 // Helper function to get a disposable token from the auth service
-async function getDisposableToken(): Promise<{ token: string; expiresAt: ExpiresAt }> {
+async function getDisposableToken(): Promise<{token: string; expiresAt: ExpiresAt}> {
   const authClient = new AuthClient({
     credentialProvider: CredentialProvider.fromEnvVarV2(),
   });
@@ -200,7 +200,7 @@ async function getDisposableToken(): Promise<{ token: string; expiresAt: Expires
     case GenerateDisposableTokenResponse.Error:
       throw new Error(`Error generating disposable token: ${fetchResp.toString()}`);
     case GenerateDisposableTokenResponse.Success:
-      return { token: fetchResp.authToken, expiresAt: fetchResp.expiresAt };
+      return {token: fetchResp.authToken, expiresAt: fetchResp.expiresAt};
   }
 }
 
