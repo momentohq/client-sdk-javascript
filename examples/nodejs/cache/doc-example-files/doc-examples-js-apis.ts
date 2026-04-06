@@ -2052,7 +2052,7 @@ async function main() {
 
     example_API_InstantiateAuthClient();
     const authClient = new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
+      credentialProvider: CredentialProvider.fromEnvVarV2(),
     });
     await example_API_GenerateApiKey(authClient);
     await example_API_RefreshApiKey(authClient);
