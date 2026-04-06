@@ -131,7 +131,7 @@ export abstract class CredentialProvider {
 
   /**
    * Creates a CredentialProvider from a short-lived disposable token string. Disposable tokens are generated
-   * via AuthClient.generateDisposableToken() and expire within 1 hour. They are intended for browser and
+   * via AuthClient.generateDisposableToken() and has a mandatory expiration time. They are intended for browser and
    * client-side use where embedding a long-lived API key would be insecure.
    *
    * Do NOT use this method with a long-lived v2 API key — use fromEnvVarV2() or fromApiKeyV2() instead.
