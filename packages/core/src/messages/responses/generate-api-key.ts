@@ -41,7 +41,7 @@ export class Success extends BaseResponseSuccess implements IResponse {
 }
 
 /**
- * Indicates that an error occurred during the generate api token request.
+ * Indicates that an error occurred during the generate api key request.
  *
  * This response object includes the following fields that you can use to determine
  * how you would like to handle the error:
