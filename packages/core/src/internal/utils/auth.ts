@@ -21,6 +21,10 @@ export interface V2Claims {
   t: string;
 }
 
+/**
+ * The decoded structure of a base64-encoded credential. This format is used by both disposable tokens and (now legacy) v1 API keys. The format
+ * embeds the raw key and the Momento endpoint together in a single portable string.
+ */
 export interface Base64DecodedV1Token {
   api_key: string;
   endpoint: string;

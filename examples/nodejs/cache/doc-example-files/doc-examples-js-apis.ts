@@ -121,6 +121,14 @@ function retrieveApiKeyV2FromYourSecretsManager(): string {
   return 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImp0aSI6InNvbWUtaWQifQ.GMr9nA6HE0ttB6llXct_2Sg5-fOKGFbJCdACZFgNbN1fhT6OPg_hVc8ThGzBrWC_RlsBpLA1nzqK3SOJDXYxAw';
 }
 
+function retrieveDisposableTokenFromYourTokenVendingMachine(): string {
+  // this is not a valid disposable token but conforms to the syntax requirements.
+  // In practice, disposable tokens are fetched from a token vending machine backed by AuthClient.generateDisposableToken().
+  const fakeDisposableToken =
+    'eyJhcGlfa2V5IjogImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSklVekkxTmlKOS5leUpwYzNNaU9pSlBibXhwYm1VZ1NsZFVJRUoxYVd4a1pYSWlMQ0pwWVhRaU9qRTJOemd6TURVNE1USXNJbVY0Y0NJNk5EZzJOVFV4TlRReE1pd2lZWFZrSWpvaUlpd2ljM1ZpSWpvaWFuSnZZMnRsZEVCbGVHRnRjR3hsTG1OdmJTSjkuOEl5OHE4NExzci1EM1lDb19IUDRkLXhqSGRUOFVDSXV2QVljeGhGTXl6OCIsICJlbmRwb2ludCI6ICJ0ZXN0Lm1vbWVudG9ocS5jb20ifQo=';
+  return fakeDisposableToken;
+}
+
 function example_API_CredentialProviderFromEnvVar() {
   CredentialProvider.fromEnvVar('MOMENTO_API_KEY');
 }
@@ -144,8 +152,8 @@ function example_API_CredentialProviderFromApiKeyV2() {
 }
 
 function example_API_CredentialProviderFromDisposableToken() {
-  const apiKey = retrieveApiKeyFromYourSecretsManager();
-  CredentialProvider.fromDisposableToken({apiKey: apiKey});
+  const disposableToken = retrieveDisposableTokenFromYourTokenVendingMachine();
+  CredentialProvider.fromDisposableToken(disposableToken);
 }
 
 function example_API_CredentialProviderFromString() {
@@ -2044,7 +2052,7 @@ async function main() {
 
     example_API_InstantiateAuthClient();
     const authClient = new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
+      credentialProvider: CredentialProvider.fromEnvVarV2(),
     });
     await example_API_GenerateApiKey(authClient);
     await example_API_RefreshApiKey(authClient);

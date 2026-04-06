@@ -113,15 +113,16 @@ async function main() {
   try {
     await set(mainCacheClient, CACHE_OPEN_DOOR, 'hello', 'world');
 
-    // Create a token valid for 600 seconds that can only read a specific cache 'open-door'
-    const [scopedToken, scopedRefreshToken] = await generateApiKey(
+    // Create a scoped API key valid for 600 seconds that can only read a specific cache 'open-door'.
+    // Note: generateApiKey() produces a legacy v1 API key, hence why the deprecated fromString() method is used.
+    const [scopedApiKey, scopedRefreshToken] = await generateApiKey(
       mainAuthClient,
       PermissionScopes.cacheReadOnly(CACHE_OPEN_DOOR),
       tokenValidForSeconds
     );
     const scopedTokenCacheClient = await CacheClient.create({
       configuration: Configurations.Laptop.v1(),
-      credentialProvider: CredentialProvider.fromDisposableToken({apiKey: scopedToken}),
+      credentialProvider: CredentialProvider.fromString(scopedApiKey),
       defaultTtlSeconds: 600,
     });
 
