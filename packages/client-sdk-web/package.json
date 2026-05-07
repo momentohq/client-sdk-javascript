@@ -39,7 +39,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@gomomento/common-integration-tests": "file:../common-integration-tests",
-    "@happy-dom/jest-environment": "16.8.1",
+    "@happy-dom/jest-environment": "20.9.0",
     "@types/jest": "27.5.2",
     "@types/node": "16.18.97",
     "@types/ua-parser-js": "0.7.39",
@@ -73,5 +73,8 @@
   },
   "engines": {
     "node": ">= 16"
+  },
+  "overrides": {
+    "@tootallnate/once": "^3.0.1"
   }
 }
