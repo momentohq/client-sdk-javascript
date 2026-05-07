@@ -14,9 +14,7 @@ import { getServerSession } from "next-auth";
 import { type NextRequest } from "next/server";
 
 const authClient = new AuthClient({
-  credentialProvider: CredentialProvider.fromString({
-    apiKey: process.env.V1_API_KEY,
-  }),
+  credentialProvider: CredentialProvider.fromEnvVarV2(),
 });
 
 export const revalidate = 0;

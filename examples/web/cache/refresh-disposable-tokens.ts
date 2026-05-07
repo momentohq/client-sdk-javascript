@@ -23,7 +23,7 @@ import {initJSDom} from './utils/jsdom';
 
 async function localTokenVendingMachine(): Promise<{token: string; expiresAt: ExpiresAt}> {
   const authClient = new AuthClient({
-    credentialProvider: CredentialProvider.fromEnvVar('V1_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
   });
   const tokenResponse = await authClient.generateDisposableToken(
     DisposableTokenScopes.topicPublishSubscribe('my-cache', AllTopics),

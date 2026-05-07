@@ -189,7 +189,7 @@ function getRefreshAfterMs(expiresAt: ExpiresAt, refreshBefore: number): number 
 // Helper function to get a disposable token from the auth service
 async function getDisposableToken(): Promise<{token: string; expiresAt: ExpiresAt}> {
   const authClient = new AuthClient({
-    credentialProvider: CredentialProvider.fromEnvironmentVariable('V1_API_KEY'),
+    credentialProvider: CredentialProvider.fromEnvVarV2(),
   });
   const fetchResp = await authClient.generateDisposableToken(
     DisposableTokenScopes.topicPublishSubscribe(AllCaches, AllTopics),

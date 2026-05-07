@@ -46,7 +46,9 @@ interface CredentialProviderProps {
  */
 export abstract class CredentialProvider {
   /**
-   * @returns {string} Auth token provided by user, required to authenticate with the service
+   * @returns {string} The raw credential value used to authenticate with the service. This will be either a
+   * v2 API key (for long-lived credentials created via the Momento console) or a disposable token (for
+   * short-lived credentials created via AuthClient.generateDisposableToken).
    */
   abstract getAuthToken(): string;
 
@@ -98,7 +100,8 @@ export abstract class CredentialProvider {
   abstract isEndpointSecure(): boolean;
 
   /**
-   * @deprecated use fromEnvVarV2() instead
+   * @deprecated use fromEnvVarV2() instead. This method only supports legacy JWT tokens and v1 api keys.
+   * Use fromEnvVarV2() for current v2 API keys.
    */
   static fromEnvironmentVariable(
     props: EnvMomentoTokenProviderProps | string
@@ -107,7 +110,8 @@ export abstract class CredentialProvider {
   }
 
   /**
-   * @deprecated use fromEnvVarV2() instead
+   * @deprecated use fromEnvVarV2() instead. This method only supports legacy JWT tokens and v1 api keys.
+   * Use fromEnvVarV2() for current v2 API keys.
    */
   static fromEnvVar(
     props: EnvMomentoTokenProviderProps | string
@@ -116,7 +120,8 @@ export abstract class CredentialProvider {
   }
 
   /**
-   * @deprecated use fromApiKeyV2() or fromDisposableToken() instead
+   * @deprecated use fromApiKeyV2() for long-lived v2 API keys or fromDisposableToken() for short-lived
+   * disposable tokens instead.
    */
   static fromString(
     props: StringMomentoTokenProviderProps | string
@@ -124,18 +129,34 @@ export abstract class CredentialProvider {
     return new StringMomentoTokenProvider(props);
   }
 
+  /**
+   * Creates a CredentialProvider from a short-lived disposable token string. Disposable tokens are generated
+   * via AuthClient.generateDisposableToken() and has a mandatory expiration time. They are intended for browser and
+   * client-side use where embedding a long-lived API key would be insecure.
+   *
+   * Do NOT use this method with a long-lived v2 API key — use fromEnvVarV2() or fromApiKeyV2() instead.
+   */
   static fromDisposableToken(
     props: StringMomentoTokenProviderProps | string
   ): CredentialProvider {
     return new StringMomentoTokenProvider(props);
   }
 
+  /**
+   * Creates a CredentialProvider by reading a v2 API key and service endpoint from environment variables
+   * MOMENTO_API_KEY and MOMENTO_ENDPOINT, respectively.
+   * V2 API keys are created via the Momento console.
+   */
   static fromEnvVarV2(
     props?: EnvMomentoV2TokenProviderProps
   ): CredentialProvider {
     return new EnvMomentoV2TokenProvider(props);
   }
 
+  /**
+   * Creates a CredentialProvider from a v2 API key string and service endpoint string.
+   * V2 API keys are created via the Momento console.
+   */
   static fromApiKeyV2(props: ApiKeyV2TokenProviderProps): CredentialProvider {
     return new ApiKeyV2TokenProvider(props);
   }
@@ -210,10 +231,13 @@ export interface EnvMomentoV2TokenProviderProps {
 }
 
 /**
- * Reads and parses a momento auth token stored in a String
+ * Reads and parses a legacy credential stored as a string. Supports the base64-encoded
+ * format used by disposable tokens and legacy v1 api keys. Does NOT
+ * support v2 API keys -— use ApiKeyV2TokenProvider for those.
  * @export
  * @class StringMomentoTokenProvider
- * @deprecated use ApiKeyV2TokenProvider instead
+ * @deprecated use ApiKeyV2TokenProvider for v2 API keys; use this class only for disposable tokens
+ * via CredentialProvider.fromDisposableToken()
  */
 export class StringMomentoTokenProvider extends CredentialProviderBase {
   private readonly apiKey: string;
@@ -332,10 +356,12 @@ export interface EnvMomentoTokenProviderProps extends CredentialProviderProps {
 }
 
 /**
- * Reads and parses a momento auth token stored as an environment variable.
+ * Reads a legacy credential from an environment variable. Supports the base64-encoded
+ * format used by disposable tokens and the legacy v1 api keys. Does NOT
+ * support v2 API keys -— use EnvMomentoV2TokenProvider for those.
  * @export
  * @class EnvMomentoTokenProvider
- * @deprecated use EnvMomentoV2TokenProvider instead
+ * @deprecated use EnvMomentoV2TokenProvider (via CredentialProvider.fromEnvVarV2()) for v2 API keys
  */
 export class EnvMomentoTokenProvider extends StringMomentoTokenProvider {
   environmentVariableName: string;
