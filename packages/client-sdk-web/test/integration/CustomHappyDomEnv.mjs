@@ -1,6 +1,6 @@
-const HappyDomEnvironment = require('@happy-dom/jest-environment').default;
+import HappyDomEnvironment from '@happy-dom/jest-environment';
 
-class CustomHappyDomEnvironment extends HappyDomEnvironment {
+export default class CustomHappyDomEnvironment extends HappyDomEnvironment {
   async setup() {
     await super.setup();
 
@@ -25,5 +25,3 @@ class CustomHappyDomEnvironment extends HappyDomEnvironment {
     };
   }
 }
-
-module.exports = CustomHappyDomEnvironment;
