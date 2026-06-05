@@ -45,7 +45,7 @@ const SUPER_USER_PERMISSIONS: PermissionScope =
 
 export function runAuthClientTests(
   sessionTokenAuthClient: IAuthClient,
-  legacyTokenAuthClient: IAuthClient,
+  legacyTokenAuthClient: IAuthClient | undefined,
   sessionTokenCacheClient: ICacheClient,
   sessionTokenTopicClient: ITopicClient,
   authTokenAuthClientFactory: (authToken: string) => IAuthClient,
@@ -400,24 +400,32 @@ export function runAuthClientTests(
       }, `Unexpected response: ${generateResponse.toString()}`);
     });
 
-    it('should not support generating a superuser token when authenticated via a legacy token', async () => {
-      const generateResponse = await legacyTokenAuthClient.generateApiKey(
-        SUPER_USER_PERMISSIONS,
-        ExpiresIn.seconds(1)
-      );
-      expectWithMessage(() => {
-        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
-      }, `Unexpected response: ${generateResponse.toString()}`);
-    });
+    // skip the legacy auth token tests if the env var isn't set
+    const describeFn = legacyTokenAuthClient ? describe : describe.skip;
+    describeFn('legacy token behavior', () => {
+      // Safe: this block only runs when describeFn is not `describe.skip`, which means legacyTokenAuthClient is defined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const client = legacyTokenAuthClient!;
 
-    it('should not support generating an AllDataReadWrite token when authenticated via a legacy token', async () => {
-      const generateResponse = await legacyTokenAuthClient.generateApiKey(
-        AllDataReadWrite,
-        ExpiresIn.seconds(1)
-      );
-      expectWithMessage(() => {
-        expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
-      }, `Unexpected response: ${generateResponse.toString()}`);
+      it('should not support generating a superuser token when authenticated via a legacy token', async () => {
+        const generateResponse = await client.generateApiKey(
+          SUPER_USER_PERMISSIONS,
+          ExpiresIn.seconds(1)
+        );
+        expectWithMessage(() => {
+          expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+        }, `Unexpected response: ${generateResponse.toString()}`);
+      });
+
+      it('should not support generating an AllDataReadWrite token when authenticated via a legacy token', async () => {
+        const generateResponse = await client.generateApiKey(
+          AllDataReadWrite,
+          ExpiresIn.seconds(1)
+        );
+        expectWithMessage(() => {
+          expect(generateResponse).toBeInstanceOf(GenerateApiKey.Error);
+        }, `Unexpected response: ${generateResponse.toString()}`);
+      });
     });
   });
 
