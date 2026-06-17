@@ -144,6 +144,7 @@ import {
   CacheNotFoundError,
   StoreItemNotFoundError,
   StoreNotFoundError,
+  FunctionNotFoundError,
   UnknownError,
 } from './errors';
 
@@ -384,5 +385,6 @@ export {
   CacheNotFoundError,
   StoreItemNotFoundError,
   StoreNotFoundError,
+  FunctionNotFoundError,
   UnknownError,
 };

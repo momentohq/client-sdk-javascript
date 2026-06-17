@@ -147,6 +147,7 @@ import {
   BadRequestError,
   PermissionError,
   CacheNotFoundError,
+  FunctionNotFoundError,
   UnknownError,
   MomentoLogger,
   MomentoLoggerFactory,
@@ -503,6 +504,7 @@ export {
   BadRequestError,
   PermissionError,
   CacheNotFoundError,
+  FunctionNotFoundError,
   UnknownError,
   // Logging
   MomentoLogger,

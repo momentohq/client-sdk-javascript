@@ -4,8 +4,10 @@ import {
   CreateCache,
   CredentialProvider,
   DeleteFunction,
+  FunctionNotFoundError,
   ListFunctions,
   ListFunctionVersions,
+  MomentoErrorCode,
   PreviewFunctionClient,
   PutFunction,
 } from '../../../src';
@@ -81,5 +83,19 @@ describeIfLive('PreviewFunctionClient (integration)', () => {
     expect(
       (after as ListFunctions.Success).getFunctions().map(f => f.getName())
     ).not.toContain(name);
+  }, 30000);
+
+  it('returns a FunctionNotFoundError when deleting a missing function', async () => {
+    const response = await functionClient.deleteFunction(
+      cacheName,
+      `missing-${v4().slice(0, 8)}`
+    );
+    expect(response).toBeInstanceOf(DeleteFunction.Error);
+    if (response instanceof DeleteFunction.Error) {
+      expect(response.innerException()).toBeInstanceOf(FunctionNotFoundError);
+      expect(response.errorCode()).toEqual(
+        MomentoErrorCode.FUNCTION_NOT_FOUND_ERROR
+      );
+    }
   }, 30000);
 });

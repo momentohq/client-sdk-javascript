@@ -2,6 +2,7 @@ import {
   CredentialProvider,
   DeleteFunction,
   FunctionInfo,
+  FunctionNotFoundError,
   FunctionVersionInfo,
   IFunctionClient,
   InvalidArgumentError,
@@ -11,6 +12,7 @@ import {
   MomentoLoggerFactory,
   PutFunction,
   PutFunctionOptions,
+  SdkError,
   UnknownError,
 } from '@gomomento/sdk-core';
 import {
@@ -31,6 +33,7 @@ import {
   Interceptor,
   Metadata,
   ServiceError,
+  status,
 } from '@grpc/grpc-js';
 import {version} from '../../package.json';
 import {FunctionClientAllProps} from './function-client-all-props';
@@ -68,6 +71,7 @@ export class FunctionClient implements IFunctionClient {
   private readonly credentialProvider: CredentialProvider;
   private readonly logger: MomentoLogger;
   private readonly cacheServiceErrorMapper: CacheServiceErrorMapper;
+  private readonly throwOnErrors: boolean;
   private readonly requestTimeoutMs: number;
   private readonly clientWrapper: GrpcClientWrapper<function_client.FunctionRegistryClient>;
   private readonly interceptors: Interceptor[];
@@ -77,8 +81,9 @@ export class FunctionClient implements IFunctionClient {
 
   constructor(props: FunctionClientAllProps, functionClientId: string) {
     this.configuration = props.configuration;
+    this.throwOnErrors = props.configuration.getThrowOnErrors();
     this.cacheServiceErrorMapper = new CacheServiceErrorMapper(
-      props.configuration.getThrowOnErrors()
+      this.throwOnErrors
     );
     this.credentialProvider = props.credentialProvider;
     this.logger = this.configuration.getLoggerFactory().getLogger(this);
@@ -191,6 +196,33 @@ export class FunctionClient implements IFunctionClient {
     return metadata;
   }
 
+  /**
+   * Like the shared cache error mapper, but surfaces a gRPC NOT_FOUND as a {@link FunctionNotFoundError} —
+   * the shared mapper would otherwise render a missing function as a cache-flavored CacheNotFoundError.
+   */
+  private resolveOrRejectFunctionError<T>(opts: {
+    err: ServiceError | null;
+    errorResponseFactoryFn: (e: SdkError) => T;
+    resolveFn: (response: T) => void;
+    rejectFn: (err: SdkError) => void;
+  }): void {
+    if (opts.err?.code === status.NOT_FOUND) {
+      const notFound = new FunctionNotFoundError(
+        opts.err.message,
+        opts.err.code,
+        opts.err.metadata,
+        opts.err.stack
+      );
+      if (this.throwOnErrors) {
+        opts.rejectFn(notFound);
+      } else {
+        opts.resolveFn(opts.errorResponseFactoryFn(notFound));
+      }
+      return;
+    }
+    this.cacheServiceErrorMapper.resolveOrRejectError(opts);
+  }
+
   public async putFunction(
     cacheName: string,
     functionName: string,
@@ -259,7 +291,7 @@ export class FunctionClient implements IFunctionClient {
             } else {
               // resp present but no function is an anomalous response; convertError(null) yields a generic
               // SdkError, so this never throws/hangs.
-              this.cacheServiceErrorMapper.resolveOrRejectError({
+              this.resolveOrRejectFunctionError({
                 err: err,
                 errorResponseFactoryFn: e => new PutFunction.Error(e),
                 resolveFn: resolve,
@@ -310,7 +342,7 @@ export class FunctionClient implements IFunctionClient {
             if (resp) {
               resolve(new DeleteFunction.Success());
             } else {
-              this.cacheServiceErrorMapper.resolveOrRejectError({
+              this.resolveOrRejectFunctionError({
                 err: err,
                 errorResponseFactoryFn: e => new DeleteFunction.Error(e),
                 resolveFn: resolve,
@@ -364,7 +396,7 @@ export class FunctionClient implements IFunctionClient {
         }
       });
       call.on('error', (err: ServiceError) => {
-        this.cacheServiceErrorMapper.resolveOrRejectError({
+        this.resolveOrRejectFunctionError({
           err: err,
           errorResponseFactoryFn: e => new ListFunctions.Error(e),
           resolveFn: resolve,
@@ -445,7 +477,7 @@ export class FunctionClient implements IFunctionClient {
         }
       });
       call.on('error', (err: ServiceError) => {
-        this.cacheServiceErrorMapper.resolveOrRejectError({
+        this.resolveOrRejectFunctionError({
           err: err,
           errorResponseFactoryFn: e => new ListFunctionVersions.Error(e),
           resolveFn: resolve,
