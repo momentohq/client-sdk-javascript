@@ -189,10 +189,7 @@ export {IMomentoCache} from './clients/IMomentoCache';
 export {ILeaderboardClient} from './clients/ILeaderboardClient';
 export {ILeaderboard} from './clients/ILeaderboard';
 
-export {
-  IFunctionClient,
-  PutFunctionOptions,
-} from './internal/clients/function/IFunctionClient';
+export {IFunctionClient, PutFunctionOptions} from './clients/IFunctionClient';
 
 export {
   CacheRole,

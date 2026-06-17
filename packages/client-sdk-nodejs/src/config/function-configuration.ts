@@ -28,7 +28,7 @@ export interface FunctionConfiguration {
   /**
    * Copy constructor for overriding TransportStrategy
    * @param {TransportStrategy} transportStrategy
-   * @returns {Configuration} a new Configuration object with the specified TransportStrategy
+   * @returns {FunctionConfiguration} a new Configuration object with the specified TransportStrategy
    */
   withTransportStrategy(
     transportStrategy: TransportStrategy
@@ -46,7 +46,7 @@ export interface FunctionConfiguration {
    * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
    * to true if you prefer for exceptions to be thrown.
    * @param {boolean} throwOnErrors
-   * @returns {Configuration} a new Configuration object with the specified throwOnErrors setting
+   * @returns {FunctionConfiguration} a new Configuration object with the specified throwOnErrors setting
    */
   withThrowOnErrors(throwOnErrors: boolean): FunctionConfiguration;
 
@@ -58,14 +58,14 @@ export interface FunctionConfiguration {
   /**
    * Copy constructor for overriding Middlewares
    * @param {Middleware[]} middlewares
-   * @returns {Configuration} a new Configuration object with the specified Middlewares
+   * @returns {FunctionConfiguration} a new Configuration object with the specified Middlewares
    */
   withMiddlewares(middlewares: Middleware[]): FunctionConfiguration;
 
   /**
    * Copy constructor that adds a single middleware to the existing middlewares
    * @param {Middleware} middleware
-   * @returns {Configuration} a new Configuration object with the specified Middleware prepended to the list of existing Middlewares
+   * @returns {FunctionConfiguration} a new Configuration object with the specified Middleware prepended to the list of existing Middlewares
    */
   addMiddleware(middleware: Middleware): FunctionConfiguration;
 }

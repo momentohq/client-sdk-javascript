@@ -3,7 +3,7 @@ import {
   ListFunctions,
   ListFunctionVersions,
   PutFunction,
-} from '../../../messages/responses/function';
+} from '../messages/responses/function';
 
 /**
  * Options for a {@link IFunctionClient.putFunction} request.
