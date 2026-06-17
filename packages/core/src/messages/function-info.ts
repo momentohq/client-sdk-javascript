@@ -1,5 +1,5 @@
 /**
- * Metadata about a Momento Function, returned by `listFunctions`.
+ * Metadata about a Momento Function, returned by `putFunction` and `listFunctions`.
  */
 export class FunctionInfo {
   private readonly _functionId: string;
