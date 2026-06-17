@@ -4,6 +4,7 @@ import * as Configurations from './config/configurations';
 import * as AuthClientConfigurations from './config/auth-client-configurations';
 import * as TopicConfigurations from './config/topic-configurations';
 import * as LeaderboardConfigurations from './config/leaderboard-configurations';
+import * as FunctionConfigurations from './config/function-configurations';
 import * as BatchUtils from './batchutils/batch-functions';
 
 import {TopicClientProps} from './topic-client-props';
@@ -96,6 +97,10 @@ import * as GenerateDisposableToken from '@gomomento/sdk-core/dist/src/messages/
 export {leaderboard} from '@gomomento/sdk-core';
 export * from '@gomomento/sdk-core/dist/src/messages/responses/leaderboard';
 
+// FunctionClient Response Types
+export {functions} from '@gomomento/sdk-core';
+export * from '@gomomento/sdk-core/dist/src/messages/responses/function';
+
 // Enums representing the different types available for each response
 export * from '@gomomento/sdk-core/dist/src/messages/responses/enums';
 
@@ -116,6 +121,10 @@ import {
   SetIfAbsentOrHashEqualOptions,
   SetIfAbsentOrHashNotEqualOptions,
   CacheInfo,
+  FunctionInfo,
+  FunctionVersionInfo,
+  IFunctionClient,
+  PutFunctionOptions,
   CollectionTtl,
   ItemType,
   SortedSetOrder,
@@ -204,6 +213,12 @@ import {
   LeaderboardClientConfiguration,
 } from './config/leaderboard-configuration';
 import {PreviewLeaderboardClient} from './preview-leaderboard-client';
+import {
+  FunctionConfiguration,
+  FunctionClientConfiguration,
+} from './config/function-configuration';
+import {PreviewFunctionClient} from './preview-function-client';
+import {FunctionClientProps} from './function-client-props';
 
 export {
   DefaultMomentoLoggerFactory,
@@ -462,6 +477,16 @@ export {
   PreviewLeaderboardClient,
   LeaderboardOrder,
   ILeaderboard,
+  // FunctionClient
+  FunctionConfigurations,
+  FunctionConfiguration,
+  FunctionClientConfiguration,
+  PreviewFunctionClient,
+  FunctionClientProps,
+  IFunctionClient,
+  PutFunctionOptions,
+  FunctionInfo,
+  FunctionVersionInfo,
   // Errors
   MomentoErrorCode,
   SdkError,
