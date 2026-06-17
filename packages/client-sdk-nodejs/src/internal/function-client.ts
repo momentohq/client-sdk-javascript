@@ -15,7 +15,11 @@ import {
   IFunctionClient,
   PutFunctionOptions,
 } from '@gomomento/sdk-core/dist/src/internal/clients/function/IFunctionClient';
-import {validateCacheName} from '@gomomento/sdk-core/dist/src/internal/utils';
+import {
+  validateCacheName,
+  validateFunctionId,
+  validateFunctionName,
+} from '@gomomento/sdk-core/dist/src/internal/utils';
 import {FunctionConfiguration} from '../config/function-configuration';
 import {function_client} from '@gomomento/generated-types/dist/function';
 import {function_types} from '@gomomento/generated-types/dist/function_types';
@@ -182,6 +186,10 @@ export class FunctionClient implements IFunctionClient {
   ): Promise<PutFunction.Response> {
     try {
       validateCacheName(cacheName);
+      validateFunctionName(functionName);
+      if (wasmBytes.length === 0) {
+        throw new InvalidArgumentError('wasm bytes must not be empty');
+      }
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
@@ -256,6 +264,7 @@ export class FunctionClient implements IFunctionClient {
   ): Promise<DeleteFunction.Response> {
     try {
       validateCacheName(cacheName);
+      validateFunctionName(functionName);
     } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
         err as Error,
@@ -365,9 +374,11 @@ export class FunctionClient implements IFunctionClient {
   public async listFunctionVersions(
     functionId: string
   ): Promise<ListFunctionVersions.Response> {
-    if (!functionId || functionId.trim().length === 0) {
+    try {
+      validateFunctionId(functionId);
+    } catch (err) {
       return this.cacheServiceErrorMapper.returnOrThrowError(
-        new InvalidArgumentError('functionId must not be empty'),
+        err as Error,
         err => new ListFunctionVersions.Error(err)
       );
     }
@@ -394,17 +405,28 @@ export class FunctionClient implements IFunctionClient {
         });
       call.on('data', (resp: function_types._FunctionVersion) => {
         try {
-          // id and wasm_id are optional proto submessages: their getters return undefined when absent, so
-          // guard the nested access (otherwise a sparse row would throw inside this listener — an uncaught
-          // exception that never settles the promise).
+          // id and wasm_id are proto submessages whose getters return undefined when absent. A row missing
+          // them is a malformed server/proto response, so fail the call rather than emit a degraded version
+          // (and never let the access throw uncaught inside this listener — that would hang the promise).
           const id = resp.id;
           const wasmId = resp.wasm_id;
+          if (id === undefined || wasmId === undefined) {
+            call.cancel();
+            resolve(
+              new ListFunctionVersions.Error(
+                new UnknownError(
+                  'ListFunctionVersions returned a version row missing id or wasm_id'
+                )
+              )
+            );
+            return;
+          }
           versions.push(
             new FunctionVersionInfo(
-              id?.id ?? '',
-              id?.version ?? 0,
+              id.id,
+              id.version,
               resp.description,
-              wasmId?.id ?? ''
+              wasmId.id
             )
           );
         } catch (e) {

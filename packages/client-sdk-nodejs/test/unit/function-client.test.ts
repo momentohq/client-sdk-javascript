@@ -82,4 +82,51 @@ describe('PreviewFunctionClient', () => {
     }
     client.close();
   });
+
+  it('returns an error on putFunction with an empty function name', async () => {
+    const client = new PreviewFunctionClient({
+      configuration,
+      credentialProvider,
+    });
+    const response = await client.putFunction(
+      'a-cache',
+      '   ',
+      new Uint8Array([0, 1, 2])
+    );
+    expect(response).toBeInstanceOf(PutFunction.Error);
+    if (response instanceof PutFunction.Error) {
+      expect(response.innerException()).toBeInstanceOf(InvalidArgumentError);
+    }
+    client.close();
+  });
+
+  it('returns an error on putFunction with empty wasm bytes', async () => {
+    const client = new PreviewFunctionClient({
+      configuration,
+      credentialProvider,
+    });
+    const response = await client.putFunction(
+      'a-cache',
+      'my-function',
+      new Uint8Array([])
+    );
+    expect(response).toBeInstanceOf(PutFunction.Error);
+    if (response instanceof PutFunction.Error) {
+      expect(response.innerException()).toBeInstanceOf(InvalidArgumentError);
+    }
+    client.close();
+  });
+
+  it('returns an error on deleteFunction with an empty function name', async () => {
+    const client = new PreviewFunctionClient({
+      configuration,
+      credentialProvider,
+    });
+    const response = await client.deleteFunction('a-cache', '   ');
+    expect(response).toBeInstanceOf(DeleteFunction.Error);
+    if (response instanceof DeleteFunction.Error) {
+      expect(response.innerException()).toBeInstanceOf(InvalidArgumentError);
+    }
+    client.close();
+  });
 });
