@@ -6,17 +6,23 @@ export class FunctionInfo {
   private readonly _name: string;
   private readonly _description: string;
   private readonly _latestVersion: number;
+  private readonly _currentVersion: number;
+  private readonly _lastUpdatedAt: string;
 
   constructor(
     functionId: string,
     name: string,
     description: string,
-    latestVersion: number
+    latestVersion: number,
+    currentVersion: number,
+    lastUpdatedAt: string
   ) {
     this._functionId = functionId;
     this._name = name;
     this._description = description;
     this._latestVersion = latestVersion;
+    this._currentVersion = currentVersion;
+    this._lastUpdatedAt = lastUpdatedAt;
   }
 
   public getFunctionId(): string {
@@ -31,8 +37,19 @@ export class FunctionInfo {
     return this._description;
   }
 
+  /** The latest version of the function. */
   public getLatestVersion(): number {
     return this._latestVersion;
+  }
+
+  /** The version currently serving traffic (the pinned version, or the latest if not pinned). */
+  public getCurrentVersion(): number {
+    return this._currentVersion;
+  }
+
+  /** When the function was last updated (ISO 8601). */
+  public getLastUpdatedAt(): string {
+    return this._lastUpdatedAt;
   }
 }
 

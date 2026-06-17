@@ -53,8 +53,12 @@ describeIfLive('PreviewFunctionClient (integration)', () => {
       environmentVariables: {E2E_GREETING: 'hello'},
     });
     expect(put).toBeInstanceOf(PutFunction.Success);
-    const functionId = (put as PutFunction.Success).functionId();
+    const deployed = (put as PutFunction.Success).getFunction();
+    const functionId = deployed.getFunctionId();
     expect(functionId).toBeTruthy();
+    expect(deployed.getName()).toEqual(name);
+    expect(deployed.getCurrentVersion()).toBeGreaterThanOrEqual(0);
+    expect(deployed.getLastUpdatedAt()).toBeTruthy();
 
     const list = await functionClient.listFunctions(cacheName);
     expect(list).toBeInstanceOf(ListFunctions.Success);

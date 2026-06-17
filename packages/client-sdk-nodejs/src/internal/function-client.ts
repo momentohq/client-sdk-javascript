@@ -44,6 +44,21 @@ import {RetryInterceptor} from './grpc/retry-interceptor';
 
 export const CONNECTION_ID_KEY = Symbol('connectionID');
 
+/** Map the generated `_Function` proto into the public `FunctionInfo`, resolving the current version. */
+function toFunctionInfo(fn: function_types._Function): FunctionInfo {
+  // current_version is a oneof: a pinned version resolves to its number, otherwise the latest version is active.
+  const currentVersion =
+    fn.current_version?.pinned?.pinned_version ?? fn.latest_version;
+  return new FunctionInfo(
+    fn.function_id,
+    fn.name,
+    fn.description,
+    fn.latest_version,
+    currentVersion,
+    fn.last_updated_at
+  );
+}
+
 // Wasm artifacts ship inline in the PutFunction request and can be large, so raise the gRPC message-size
 // caps above the data-plane defaults (which are tuned for small cache items).
 const MAX_MESSAGE_SIZE_BYTES = 32 * 1024 * 1024;
@@ -240,7 +255,7 @@ export class FunctionClient implements IFunctionClient {
               resp as function_client._PutFunctionResponse | undefined
             )?.function;
             if (fn) {
-              resolve(new PutFunction.Success(fn.function_id, functionName));
+              resolve(new PutFunction.Success(toFunctionInfo(fn)));
             } else {
               // resp present but no function is an anomalous response; convertError(null) yields a generic
               // SdkError, so this never throws/hangs.
@@ -338,14 +353,7 @@ export class FunctionClient implements IFunctionClient {
         });
       call.on('data', (resp: function_types._Function) => {
         try {
-          functions.push(
-            new FunctionInfo(
-              resp.function_id,
-              resp.name,
-              resp.description,
-              resp.latest_version
-            )
-          );
+          functions.push(toFunctionInfo(resp));
         } catch (e) {
           call.cancel();
           resolve(

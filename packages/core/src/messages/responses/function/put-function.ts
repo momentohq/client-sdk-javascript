@@ -1,4 +1,5 @@
 import {SdkError} from '../../../errors';
+import {FunctionInfo} from '../../function-info';
 import {BaseResponseError, BaseResponseSuccess} from '../response-base';
 import {PutFunctionResponse} from '../enums';
 
@@ -8,17 +9,23 @@ interface IResponse {
 
 /**
  * Indicates a successful put-function request. The function is created, or updated if one already exists with
- * the same cache + name (each update creates a new version); the returned id identifies the deployed function.
+ * the same cache + name (each update creates a new version); the returned function carries its full metadata.
  */
 export class Success extends BaseResponseSuccess implements IResponse {
   readonly type: PutFunctionResponse.Success = PutFunctionResponse.Success;
-  private readonly _functionId: string;
-  private readonly _name: string;
+  private readonly _function: FunctionInfo;
 
-  constructor(functionId: string, name: string) {
+  constructor(deployedFunction: FunctionInfo) {
     super();
-    this._functionId = functionId;
-    this._name = name;
+    this._function = deployedFunction;
+  }
+
+  /**
+   * The deployed function's metadata.
+   * @returns {FunctionInfo}
+   */
+  public getFunction(): FunctionInfo {
+    return this._function;
   }
 
   /**
@@ -26,7 +33,7 @@ export class Success extends BaseResponseSuccess implements IResponse {
    * @returns {string}
    */
   public functionId(): string {
-    return this._functionId;
+    return this._function.getFunctionId();
   }
 
   /**
@@ -34,13 +41,11 @@ export class Success extends BaseResponseSuccess implements IResponse {
    * @returns {string}
    */
   public name(): string {
-    return this._name;
+    return this._function.getName();
   }
 
   public override toString(): string {
-    return `${super.toString()}: functionId: ${this._functionId}, name: ${
-      this._name
-    }`;
+    return `${super.toString()}: functionId: ${this.functionId()}, name: ${this.name()}`;
   }
 }
 
