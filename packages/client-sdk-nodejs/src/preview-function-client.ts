@@ -1,15 +1,13 @@
 import {
   DeleteFunction,
   getDefaultCredentialProvider,
+  IFunctionClient,
   ListFunctions,
   ListFunctionVersions,
   MomentoLogger,
   PutFunction,
-} from '@gomomento/sdk-core';
-import {
-  IFunctionClient,
   PutFunctionOptions,
-} from '@gomomento/sdk-core/dist/src/internal/clients/function/IFunctionClient';
+} from '@gomomento/sdk-core';
 import {FunctionClient} from './internal/function-client';
 import {FunctionClientProps} from './function-client-props';
 import {FunctionConfiguration, FunctionConfigurations} from './index';

@@ -65,7 +65,7 @@ export interface FunctionConfiguration {
   /**
    * Copy constructor that adds a single middleware to the existing middlewares
    * @param {Middleware} middleware
-   * @returns {Configuration} a new Configuration object with the specified Middleware appended to the list of existing Middlewares
+   * @returns {Configuration} a new Configuration object with the specified Middleware prepended to the list of existing Middlewares
    */
   addMiddleware(middleware: Middleware): FunctionConfiguration;
 }

@@ -3,18 +3,16 @@ import {
   DeleteFunction,
   FunctionInfo,
   FunctionVersionInfo,
+  IFunctionClient,
   InvalidArgumentError,
   ListFunctions,
   ListFunctionVersions,
   MomentoLogger,
   MomentoLoggerFactory,
   PutFunction,
+  PutFunctionOptions,
   UnknownError,
 } from '@gomomento/sdk-core';
-import {
-  IFunctionClient,
-  PutFunctionOptions,
-} from '@gomomento/sdk-core/dist/src/internal/clients/function/IFunctionClient';
 import {
   validateCacheName,
   validateFunctionId,
