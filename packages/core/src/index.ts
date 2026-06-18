@@ -88,11 +88,16 @@ import * as GenerateDisposableToken from './messages/responses/generate-disposab
 export * as leaderboard from './messages/responses/leaderboard';
 export * from './messages/responses/leaderboard';
 
+// Function Response Types
+export * as functions from './messages/responses/function';
+export * from './messages/responses/function';
+
 export * as webhook from './messages/responses/webhook';
 export * from './messages/responses/webhook';
 export {Webhook, WebhookId} from './messages/webhook';
 
 import {CacheInfo} from './messages/cache-info';
+import {FunctionInfo, FunctionVersionInfo} from './messages/function-info';
 import {
   SubscribeCallOptions,
   CollectionTtl,
@@ -139,6 +144,7 @@ import {
   CacheNotFoundError,
   StoreItemNotFoundError,
   StoreNotFoundError,
+  FunctionNotFoundError,
   UnknownError,
 } from './errors';
 
@@ -183,6 +189,8 @@ export {IMomentoCache} from './clients/IMomentoCache';
 
 export {ILeaderboardClient} from './clients/ILeaderboardClient';
 export {ILeaderboard} from './clients/ILeaderboard';
+
+export {IFunctionClient, PutFunctionOptions} from './clients/IFunctionClient';
 
 export {
   CacheRole,
@@ -329,6 +337,8 @@ export {
   CacheIncreaseTtl,
   CacheDecreaseTtl,
   CacheInfo,
+  FunctionInfo,
+  FunctionVersionInfo,
   CacheSetBatch,
   CacheGetBatch,
   CacheSetWithHash,
@@ -375,5 +385,6 @@ export {
   CacheNotFoundError,
   StoreItemNotFoundError,
   StoreNotFoundError,
+  FunctionNotFoundError,
   UnknownError,
 };

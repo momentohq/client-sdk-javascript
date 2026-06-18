@@ -1,0 +1,160 @@
+import {MomentoLoggerFactory, TransportStrategy} from '../';
+import {Middleware} from './middleware/middleware';
+
+/**
+ * Configuration options for Momento FunctionClient
+ *
+ * @export
+ * @interface FunctionConfiguration
+ */
+export interface FunctionConfiguration {
+  /**
+   * @returns {MomentoLoggerFactory} the current configuration options for logging verbosity and format
+   */
+  getLoggerFactory(): MomentoLoggerFactory;
+
+  /**
+   * @returns {TransportStrategy} the current configuration options for wire interactions with the Momento service
+   */
+  getTransportStrategy(): TransportStrategy;
+
+  /**
+   * Convenience copy constructor that updates the client-side timeout setting in the TransportStrategy
+   * @param {number} clientTimeoutMillis
+   * @returns {FunctionConfiguration} a new Configuration object with its TransportStrategy updated to use the specified client timeout
+   */
+  withClientTimeoutMillis(clientTimeoutMillis: number): FunctionConfiguration;
+
+  /**
+   * Copy constructor for overriding TransportStrategy
+   * @param {TransportStrategy} transportStrategy
+   * @returns {FunctionConfiguration} a new Configuration object with the specified TransportStrategy
+   */
+  withTransportStrategy(
+    transportStrategy: TransportStrategy
+  ): FunctionConfiguration;
+
+  /**
+   * @returns {boolean} Configures whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   */
+  getThrowOnErrors(): boolean;
+
+  /**
+   * Copy constructor for configuring whether the client should return a Momento Error object or throw an exception when an
+   * error occurs. By default, this is set to false, and the client will return a Momento Error object on errors. Set it
+   * to true if you prefer for exceptions to be thrown.
+   * @param {boolean} throwOnErrors
+   * @returns {FunctionConfiguration} a new Configuration object with the specified throwOnErrors setting
+   */
+  withThrowOnErrors(throwOnErrors: boolean): FunctionConfiguration;
+
+  /**
+   * @returns {Middleware[]} the middleware functions that will wrap each request
+   */
+  getMiddlewares(): Middleware[];
+
+  /**
+   * Copy constructor for overriding Middlewares
+   * @param {Middleware[]} middlewares
+   * @returns {FunctionConfiguration} a new Configuration object with the specified Middlewares
+   */
+  withMiddlewares(middlewares: Middleware[]): FunctionConfiguration;
+
+  /**
+   * Copy constructor that adds a single middleware to the existing middlewares
+   * @param {Middleware} middleware
+   * @returns {FunctionConfiguration} a new Configuration object with the specified Middleware prepended to the list of existing Middlewares
+   */
+  addMiddleware(middleware: Middleware): FunctionConfiguration;
+}
+
+export interface FunctionConfigurationProps {
+  /**
+   * Configures logging verbosity and format
+   */
+  loggerFactory: MomentoLoggerFactory;
+  /**
+   * Configures low-level options for network interactions with the Momento service
+   */
+  transportStrategy: TransportStrategy;
+
+  /**
+   * Configures whether the client should return a Momento Error object or throw an exception when an error occurs.
+   */
+  throwOnErrors: boolean;
+
+  /**
+   * Configures middleware functions that will wrap each request
+   */
+  middlewares: Middleware[];
+}
+
+export class FunctionClientConfiguration implements FunctionConfiguration {
+  private readonly loggerFactory: MomentoLoggerFactory;
+  private readonly transportStrategy: TransportStrategy;
+  private readonly throwOnErrors: boolean;
+  private readonly middlewares: Middleware[];
+
+  constructor(props: FunctionConfigurationProps) {
+    this.loggerFactory = props.loggerFactory;
+    this.transportStrategy = props.transportStrategy;
+    this.throwOnErrors = props.throwOnErrors;
+    this.middlewares = props.middlewares;
+  }
+
+  getLoggerFactory(): MomentoLoggerFactory {
+    return this.loggerFactory;
+  }
+
+  getTransportStrategy(): TransportStrategy {
+    return this.transportStrategy;
+  }
+
+  withClientTimeoutMillis(clientTimeoutMillis: number): FunctionConfiguration {
+    return new FunctionClientConfiguration({
+      ...this,
+      transportStrategy:
+        this.transportStrategy.withClientTimeoutMillis(clientTimeoutMillis),
+    });
+  }
+
+  withTransportStrategy(
+    transportStrategy: TransportStrategy
+  ): FunctionConfiguration {
+    return new FunctionClientConfiguration({
+      ...this,
+      transportStrategy,
+    });
+  }
+
+  getThrowOnErrors(): boolean {
+    return this.throwOnErrors;
+  }
+
+  withThrowOnErrors(throwOnErrors: boolean): FunctionConfiguration {
+    return new FunctionClientConfiguration({
+      ...this,
+      throwOnErrors,
+    });
+  }
+
+  getMiddlewares(): Middleware[] {
+    return this.middlewares;
+  }
+
+  withMiddlewares(middlewares: Middleware[]): FunctionConfiguration {
+    return new FunctionClientConfiguration({
+      ...this,
+      middlewares,
+    });
+  }
+
+  addMiddleware(middleware: Middleware): FunctionConfiguration {
+    return new FunctionClientConfiguration({
+      ...this,
+      middlewares: [middleware, ...this.middlewares],
+    });
+  }
+}
