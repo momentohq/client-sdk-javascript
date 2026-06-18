@@ -393,7 +393,7 @@ export function SetupLeaderboardIntegrationTest(): {
 
 export function SetupAuthClientIntegrationTest(): {
   mgaAccountSessionTokenAuthClient: AuthClient;
-  legacyTokenAuthClient: AuthClient;
+  legacyTokenAuthClient: AuthClient | undefined;
   mgaAccountSessionTokenCacheClient: CacheClient;
   mgaAccountSessionTokenTopicClient: TopicClient;
   authTokenAuthClientFactory: (authToken: string) => AuthClient;
@@ -426,11 +426,13 @@ export function SetupAuthClientIntegrationTest(): {
     mgaAccountSessionTokenAuthClient: new AuthClient({
       credentialProvider: mgaAccountSessionTokenCredsProvider(),
     }),
-    legacyTokenAuthClient: new AuthClient({
-      credentialProvider: CredentialProvider.fromEnvironmentVariable({
-        environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
-      }),
-    }),
+    legacyTokenAuthClient: process.env.TEST_LEGACY_AUTH_TOKEN
+      ? new AuthClient({
+          credentialProvider: CredentialProvider.fromEnvironmentVariable({
+            environmentVariableName: 'TEST_LEGACY_AUTH_TOKEN',
+          }),
+        })
+      : undefined,
     mgaAccountSessionTokenCacheClient:
       momentoCacheClientForTestingWithMgaAccountSessionToken(),
     mgaAccountSessionTokenTopicClient:

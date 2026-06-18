@@ -118,6 +118,18 @@ export function validateWebhookName(name: string) {
   }
 }
 
+export function validateFunctionName(name: string) {
+  if (isEmpty(name)) {
+    throw new InvalidArgumentError('function name must not be empty');
+  }
+}
+
+export function validateFunctionId(functionId: string) {
+  if (isEmpty(functionId)) {
+    throw new InvalidArgumentError('function id must not be empty');
+  }
+}
+
 export function validateIndexName(name: string) {
   if (isEmpty(name)) {
     throw new InvalidArgumentError('index name must not be empty');

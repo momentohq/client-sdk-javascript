@@ -17,6 +17,8 @@ export enum MomentoErrorCode {
   STORE_NOT_FOUND_ERROR = 'STORE_NOT_FOUND_ERROR',
   // Item with specified key doesn't exist
   STORE_ITEM_NOT_FOUND_ERROR = 'STORE_ITEM_NOT_FOUND_ERROR',
+  // Function with specified name doesn't exist
+  FUNCTION_NOT_FOUND_ERROR = 'FUNCTION_NOT_FOUND_ERROR',
   // An unexpected error occurred while trying to fulfill the request
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   // Insufficient permissions to perform operation
@@ -276,6 +278,16 @@ export class StoreNotFoundError extends SdkError {
 export class StoreItemNotFoundError extends SdkError {
   override _errorCode = MomentoErrorCode.STORE_ITEM_NOT_FOUND_ERROR;
   override _messageWrapper = 'An item with the specified key does not exist';
+}
+
+/**
+ * Error that occurs when trying to operate on a function that doesn't exist. To resolve, make sure that the
+ * function you are trying to use exists; if it doesn't, create it first and then try again.
+ */
+export class FunctionNotFoundError extends SdkError {
+  override _errorCode = MomentoErrorCode.FUNCTION_NOT_FOUND_ERROR;
+  override _messageWrapper =
+    'A function with the specified name does not exist.  To resolve this error, make sure you have created the function before attempting to use it';
 }
 
 /**
