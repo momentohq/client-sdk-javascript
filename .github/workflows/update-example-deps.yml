@@ -16,6 +16,13 @@
         MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
 
       steps:
+        - name: Generate release bot token
+          id: app-token
+          uses: actions/create-github-app-token@v3
+          with:
+            app-id: ${{ secrets.MOMENTO_RELEASE_APP_ID }}
+            private-key: ${{ secrets.MOMENTO_RELEASE_APP_PRIVATE_KEY }}
+
         - name: Setup repo
           uses: actions/checkout@v3
 
@@ -33,7 +40,7 @@
         - name: Open PR
           uses: peter-evans/create-pull-request@v7
           with:
-            token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+            token: ${{ steps.app-token.outputs.token }}
             commit-message: "chore: update momento dependency in examples\n\nAutomated commit created by update-example-deps workflow"
             title: "chore: update momento dependency in examples"
             team-reviewers: "momentohq/dev-eco"
