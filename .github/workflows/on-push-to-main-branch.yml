@@ -9,10 +9,17 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      - name: Generate release bot token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.MOMENTO_RELEASE_APP_ID }}
+          private-key: ${{ secrets.MOMENTO_RELEASE_APP_PRIVATE_KEY }}
+
       - name: Setup repo
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Install Node
         uses: actions/setup-node@v3
