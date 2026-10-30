@@ -285,7 +285,12 @@ export class CacheControlClient {
                 maxThroughputKbps: cache.cache_limits?.max_throughput_kbps || 0,
                 maxTrafficRate: cache.cache_limits?.max_traffic_rate || 0,
               };
-              return new CacheInfo(cacheName, topicLimits, cacheLimits);
+              return new CacheInfo(
+                cacheName,
+                topicLimits,
+                cacheLimits,
+                cache.cache_id
+              );
             });
             resolve(new ListCaches.Success(caches));
           }
