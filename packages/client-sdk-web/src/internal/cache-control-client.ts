@@ -222,7 +222,12 @@ export class CacheControlClient<
                 maxTrafficRate:
                   cache.getCacheLimits()?.getMaxTrafficRate() || 0,
               };
-              return new CacheInfo(cacheName, topicLimits, cacheLimits);
+              return new CacheInfo(
+                cacheName,
+                topicLimits,
+                cacheLimits,
+                cache.getCacheId()
+              );
             });
             resolve(new ListCaches.Success(caches));
           }
